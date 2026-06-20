@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสารสนเทศสรุปผลการสะท้อนคิดวิจัยในชั้นเรียน - รร.ฉือจี้เชียงใหม่</title>
+  <!-- Google Fonts: Sarabun & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Chart.js for beautiful charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome for modern icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* Tzu Chi Clean & Premium Design System */
+    :root {
+      --color-primary: #0D3A6C;      /* Tzu Chi Indigo/Blue */
+      --color-primary-light: #E6EEF8;
+      --color-secondary: #2A6F97;    /* Slate Teal/Ocean Blue */
+      --color-accent: #A9D6E5;       /* Soft Light Blue */
+      --color-bg-light: #F4F6F9;     /* Ultra Light Gray-Blue background */
+      --color-card-bg: #FFFFFF;
+      --color-text-main: #2C3E50;
+      --color-text-muted: #627D98;
+      --color-success: #2ECC71;
+      --color-success-light: #E8F8F0;
+      --color-warning: #F39C12;
+      --color-border: #E2E8F0;
+      --font-family: 'Outfit', 'Sarabun', sans-serif;
+      --shadow-soft: 0 10px 30px -5px rgba(13, 58, 108, 0.05), 0 5px 15px -8px rgba(0, 0, 0, 0.03);
+      --shadow-hover: 0 20px 40px -10px rgba(13, 58, 108, 0.12), 0 8px 20px -8px rgba(0, 0, 0, 0.06);
+      --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      --border-radius-lg: 16px;
+      --border-radius-md: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--color-bg-light);
+      color: var(--color-text-main);
+      line-height: 1.6;
+      padding-bottom: 60px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Layout & Navigation */
+    .app-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--color-primary) 0%, #082343 100%);
+      color: white;
+      border-radius: var(--border-radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+
+    .brand-section {
+      z-index: 1;
+    }
+
+    .brand-section h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-section h1 i {
+      color: var(--color-accent);
+    }
+
+    .brand-section p {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 300;
+    }
+
+    .meta-info-badge {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: white;
+      z-index: 1;
+    }
+
+    /* KPI Cards Layout */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .kpi-card {
+      background: var(--color-card-bg);
+      border-radius: var(--border-radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      transition: var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-hover);
+      border-color: rgba(13, 58, 108, 0.2);
+    }
+
+    .kpi-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: transparent;
+      transition: var(--transition-base);
+    }
+
+    .kpi-card.primary::after { background: var(--color-primary); }
+    .kpi-card.secondary::after { background: var(--color-secondary); }
+    .kpi-card.success::after { background: var(--color-success); }
+    .kpi-card.warning::after { background: var(--color-warning); }
+
+    .kpi-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .kpi-card.primary .kpi-icon { background: rgba(13, 58, 108, 0.1); color: var(--color-primary); }
+    .kpi-card.secondary .kpi-icon { background: rgba(42, 111, 151, 0.1); color: var(--color-secondary); }
+    .kpi-card.success .kpi-icon { background: rgba(46, 204, 113, 0.1); color: var(--color-success); }
+    .kpi-card.warning .kpi-icon { background: rgba(243, 156, 18, 0.1); color: var(--color-warning); }
+
+    .kpi-data h3 {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .kpi-data .kpi-value {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--color-text-main);
+    }
+
+    /* Dashboard Layout Panels */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .panel {
+      background: var(--color-card-bg);
+      border-radius: var(--border-radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--color-border);
+      transition: var(--transition-base);
+    }
+
+    .panel:hover {
+      box-shadow: var(--shadow-hover);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .panel-col-6 { grid-column: span 6; }
+    .panel-col-12 { grid-column: span 12; }
+
+    @media (max-width: 1024px) {
+      .panel-col-6 { grid-column: span 12; }
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+
+    /* Tab Controls */
+    .tab-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid var(--color-border);
+      padding-bottom: 8px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-family);
+      font-weight: 500;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      border-radius: var(--border-radius-md);
+      transition: var(--transition-base);
+    }
+
+    .tab-btn:hover {
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+
+    .tab-btn.active {
+      background: var(--color-primary);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Filter & Table Styling */
+    .search-filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 250px;
+    }
+
+    .search-wrapper i {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-muted);
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 12px 12px 40px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-md);
+      font-family: var(--font-family);
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition-base);
+    }
+
+    .search-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(13, 58, 108, 0.1);
+    }
+
+    .filter-select {
+      padding: 12px 16px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--border-radius-md);
+      font-family: var(--font-family);
+      font-size: 14px;
+      background-color: white;
+      outline: none;
+      min-width: 160px;
+      cursor: pointer;
+      transition: var(--transition-base);
+    }
+
+    .filter-select:focus {
+      border-color: var(--color-primary);
+    }
+
+    .btn-reset {
+      background: white;
+      border: 1px solid var(--color-border);
+      padding: 12px 16px;
+      border-radius: var(--border-radius-md);
+      font-family: var(--font-family);
+      font-size: 14px;
+      cursor: pointer;
+      transition: var(--transition-base);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--color-text-muted);
+    }
+
+    .btn-reset:hover {
+      background: #F1F5F9;
+      color: var(--color-primary);
+    }
+
+    .table-container {
+      overflow-x: auto;
+      border-radius: var(--border-radius-md);
+      border: 1px solid var(--color-border);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .data-table th {
+      background: #F8FAFC;
+      color: var(--color-primary);
+      font-weight: 600;
+      padding: 16px 20px;
+      border-bottom: 2px solid var(--color-border);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .data-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--color-border);
+      color: var(--color-text-main);
+    }
+
+    .data-table tbody tr {
+      transition: var(--transition-base);
+    }
+
+    .data-table tbody tr:hover {
+      background-color: var(--color-primary-light);
+    }
+
+    .score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+
+    .score-badge.high {
+      background-color: var(--color-success-light);
+      color: #15803D;
+    }
+
+    .score-badge.mid {
+      background-color: #FEF3C7;
+      color: #B45309;
+    }
+
+    .btn-action {
+      background: var(--color-primary);
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 30px;
+      cursor: pointer;
+      font-family: var(--font-family);
+      font-size: 12px;
+      font-weight: 500;
+      transition: var(--transition-base);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-action:hover {
+      background: var(--color-secondary);
+      box-shadow: 0 4px 10px rgba(42, 111, 151, 0.2);
+    }
+
+    /* Modal dialog */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 35, 67, 0.4);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: var(--border-radius-lg);
+      width: 90%;
+      max-width: 750px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 50px -12px rgba(8, 35, 67, 0.25);
+      border: 1px solid var(--color-border);
+      animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(30px) scale(0.95); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      color: white;
+      padding: 24px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .modal-title h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .modal-title p {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .modal-close {
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: var(--transition-base);
+    }
+
+    .modal-close:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      padding: 30px;
+    }
+
+    .modal-section {
+      margin-bottom: 24px;
+    }
+
+    .modal-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .section-title-mod {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .content-box {
+      background: #F8FAFC;
+      border-radius: var(--border-radius-md);
+      padding: 16px 20px;
+      border-left: 4px solid var(--color-primary);
+      font-size: 14px;
+      color: var(--color-text-main);
+    }
+
+    .strengths-box {
+      border-left-color: var(--color-success);
+      background-color: var(--color-success-light);
+    }
+
+    .future-box {
+      border-left-color: var(--color-warning);
+      background-color: #FFFBEB;
+    }
+
+    .feedback-item {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--color-border);
+    }
+
+    .feedback-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .feedback-meta {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Policy Insights Panel */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .insight-card {
+      background: #F8FAFC;
+      border-radius: var(--border-radius-md);
+      padding: 20px;
+      border: 1px solid var(--color-border);
+      border-top: 4px solid var(--color-primary);
+      transition: var(--transition-base);
+    }
+
+    .insight-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .insight-card.success { border-top-color: var(--color-success); }
+    .insight-card.warning { border-top-color: var(--color-warning); }
+
+    .insight-card h4 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .insight-card p {
+      font-size: 13.5px;
+      color: var(--color-text-main);
+    }
+
+    /* Status & Loading indicators */
+    .loader-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(244, 246, 249, 0.9);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(13, 58, 108, 0.1);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loader-text {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-primary);
+    }
+
+    .error-container {
+      background: #FEE2E2;
+      border: 1px solid #FECACA;
+      color: #991B1B;
+      padding: 16px;
+      border-radius: var(--border-radius-md);
+      margin-bottom: 24px;
+      display: none;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading Backdrop -->
+  <div id="loader" class="loader-backdrop">
+    <div class="spinner"></div>
+    <div class="loader-text">กำลังประมวลผลข้อมูลสารสนเทศ...</div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Top Header -->
+    <header>
+      <div class="brand-section">
+        <h1><i class="fa-solid fa-graduation-cap"></i> ระบบสรุปสารสนเทศเชิงกราฟิกและสะท้อนคิดวิจัยในชั้นเรียน</h1>
+        <p>ชุมชนแห่งการเรียนรู้ทางวิชาชีพครู (PLC) โรงเรียนฉือจี้เชียงใหม่</p>
+      </div>
+      <div class="meta-info-badge" id="sourceBadge">
+        <i class="fa-solid fa-database"></i> แหล่งข้อมูล: กำลังตรวจสอบ
+      </div>
+    </header>
+
+    <!-- Error message alert -->
+    <div id="errorAlert" class="error-container">
+      <i class="fa-solid fa-circle-exclamation"></i>
+      <span id="errorMessage">เกิดข้อผิดพลาดในการโหลดข้อมูล</span>
+    </div>
+
+    <!-- KPI Summary Row -->
+    <div class="kpi-row">
+      <div class="kpi-card primary">
+        <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="kpi-data">
+          <h3>ครูผู้เสนอวิจัยในชั้นเรียน</h3>
+          <div class="kpi-value" id="kpiTeachers">-</div>
+        </div>
+      </div>
+      
+      <div class="kpi-card secondary">
+        <div class="kpi-icon"><i class="fa-solid fa-comments"></i></div>
+        <div class="kpi-data">
+          <h3>ความคิดเห็นสะท้อนคิดสะสม</h3>
+          <div class="kpi-value" id="kpiFeedbacks">-</div>
+        </div>
+      </div>
+
+      <div class="kpi-card success">
+        <div class="kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <div class="kpi-data">
+          <h3>คะแนนประสิทธิผลเฉลี่ย</h3>
+          <div class="kpi-value" id="kpiAvgScore">-</div>
+        </div>
+      </div>
+
+      <div class="kpi-card warning">
+        <div class="kpi-icon"><i class="fa-solid fa-layer-group"></i></div>
+        <div class="kpi-data">
+          <h3>กลุ่มสาระและฝ่ายสนับสนุน</h3>
+          <div class="kpi-value" id="kpiDepts">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabbed Navigation Panels -->
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab(event, 'tab-dashboard')">
+        <i class="fa-solid fa-chart-pie"></i> แดชบอร์ดภาพรวม
+      </button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-details')">
+        <i class="fa-solid fa-list-check"></i> รายละเอียดงานวิจัยรายบุคคล
+      </button>
+      <button class="tab-btn" onclick="switchTab(event, 'tab-insights')">
+        <i class="fa-solid fa-lightbulb"></i> ข้อเสนอแนะเชิงนโยบายปี 2569
+      </button>
+    </div>
+
+    <!-- TAB 1: Dashboard ภาพรวม -->
+    <div id="tab-dashboard" class="tab-content active">
+      <div class="dashboard-grid">
+        <!-- Chart 1: Learning Area Distribution -->
+        <div class="panel panel-col-6">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-chart-pie" style="color: var(--color-primary);"></i>
+              สัดส่วนความคิดเห็นแบ่งตามกลุ่มสาระ/งานสนับสนุน
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartDept"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 2: Grade Level Distribution -->
+        <div class="panel panel-col-6">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-chart-bar" style="color: var(--color-secondary);"></i>
+              จำนวนโครงการวิจัยจำแนกตามระดับชั้น
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartLevel"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Innovation Effectiveness by Learning Area -->
+        <div class="panel panel-col-12">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-star" style="color: var(--color-warning);"></i>
+              ค่าเฉลี่ยคะแนนประสิทธิผลของนวัตกรรมจำแนกตามกลุ่มสาระ (เต็ม 5 คะแนน)
+            </div>
+          </div>
+          <div class="chart-container" style="height: 350px;">
+            <canvas id="chartScoreDept"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: รายละเอียดงานวิจัยรายบุคคล -->
+    <div id="tab-details" class="tab-content">
+      <div class="panel panel-col-12">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-magnifying-glass"></i> ค้นหาและกลั่นกรองหัวข้องานวิจัยในชั้นเรียน
+          </div>
+        </div>
+        
+        <!-- Filters Row -->
+        <div class="search-filter-row">
+          <div class="search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="ค้นหาชื่อครู, ชื่องานวิจัย, หรือคำสำคัญ..." oninput="applyFilters()">
+          </div>
+          
+          <select id="filterDept" class="filter-select" onchange="applyFilters()">
+            <option value="">-- ทุกกลุ่มสาระ/ฝ่าย --</option>
+          </select>
+
+          <select id="filterLevel" class="filter-select" onchange="applyFilters()">
+            <option value="">-- ทุกระดับชั้น --</option>
+          </select>
+
+          <button class="btn-reset" onclick="resetFilters()">
+            <i class="fa-solid fa-rotate-right"></i> ล้างการกรอง
+          </button>
+        </div>
+
+        <!-- Table Grid -->
+        <div class="table-container">
+          <table class="data-table" id="researchTable">
+            <thead>
+              <tr>
+                <th style="width: 20%;">ชื่อ-สกุลครูผู้เสนอ</th>
+                <th style="width: 35%;">ชื่องานวิจัยในชั้นเรียน</th>
+                <th style="width: 15%;">กลุ่มสาระ/ฝ่าย</th>
+                <th style="width: 10%;">ระดับชั้น</th>
+                <th style="width: 10%;">ประสิทธิผลเฉลี่ย</th>
+                <th style="width: 10%; text-align: center;">จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Dynamically populated rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ข้อเสนอแนะการสังเคราะห์สารสนเทศ 5 ด้านหลัก -->
+    <div id="tab-insights" class="tab-content">
+      <div class="panel panel-col-12">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-lightbulb"></i> รายงานข้อเสนอแนะการสังเคราะห์สารสนเทศภาพรวมและการขยายผลเชิงนโยบาย
+          </div>
+        </div>
+        
+        <div class="insights-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+          <!-- ด้านที่ 1 -->
+          <div class="insight-card" style="border-top: 4px solid var(--color-primary); background: #F8FAFC; padding: 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: var(--color-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-chart-line" style="font-size: 18px;"></i> ด้านที่ 1: ทิศทางและแนวโน้มวิจัย (Research Trends & Gaps)
+              </h4>
+              <p style="font-size: 13px; color: var(--color-text-main); margin-bottom: 16px; text-align: justify; line-height: 1.6;">
+                <strong>แนวทางการสังเคราะห์:</strong> จัดทำสถิติแสดงสัดส่วนและการกระจายตัวของกลุ่มวิจัย เพื่อมองหาจุดที่หนาแน่นและพื้นที่ที่ยังขาดแคลนงานวิจัยในการยกระดับคุณภาพผู้เรียน
+              </p>
+            </div>
+            <div style="background: var(--color-primary-light); padding: 14px; border-radius: 8px; font-size: 12.5px; border-left: 4px solid var(--color-primary); color: #0f2d52; line-height: 1.5;">
+              <strong>ข้อเสนอแนะเชิงลึก:</strong> จากสถิติจริง กลุ่มสาระภาษาอังกฤษ (19.8%) และวิทยาศาสตร์ฯ (16.7%) มีการวิจัยหนาแน่น ขณะที่คณิตศาสตร์มีเพียง 4.2% และการวิจัยในระดับ ป.5-ป.3 คิดเป็นมากกว่าครึ่งหนึ่ง ฝ่ายวิชาการควรส่งเสริมกระบวนการวิจัยในกลุ่มวิชาที่เป็นช่องว่าง (Development Gaps) ในปีการศึกษาถัดไป
+            </div>
+          </div>
+
+          <!-- ด้านที่ 2 -->
+          <div class="insight-card" style="border-top: 4px solid var(--color-secondary); background: #F8FAFC; padding: 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: var(--color-secondary); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-cubes" style="font-size: 18px;"></i> ด้านที่ 2: การถอดบทเรียนสื่อนวัตกรรม (Innovation & Active Learning)
+              </h4>
+              <p style="font-size: 13px; color: var(--color-text-main); margin-bottom: 16px; text-align: justify; line-height: 1.6;">
+                <strong>แนวทางการสังเคราะห์:</strong> ถอดแบบแยกแยะประเภทสื่อและนวัตกรรมที่มีผลสัมฤทธิ์ดีที่สุด เพื่อสรุปเป็นหมวดหมู่ต้นแบบการเรียนรู้ เช่น แบบฝึกเสริมทักษะ, บอร์ดเกม/เกมการศึกษา, สื่อ 3 มิติ/AR/AI, บทบาทสมมติ และศิลปะบำบัด
+              </p>
+            </div>
+            <div style="background: rgba(42, 111, 151, 0.08); padding: 14px; border-radius: 8px; font-size: 12.5px; border-left: 4px solid var(--color-secondary); color: #174b68; line-height: 1.5;">
+              <strong>ข้อเสนอแนะเชิงลึก:</strong> สื่อนวัตกรรมเด่นๆ เช่น สื่อโมเดลสุริยะ/AR (ครูธนาธิป) หรือเกมเศรษฐีภาษี (ครูศุภฤกษ์) ได้รับความพึงพอใจสูง โรงเรียนควรจัดทำ <strong>"คลังสื่อนวัตกรรมฉือจี้เชียงใหม่ (Innovation Catalog)"</strong> เพื่อบันทึกต้นแบบสื่อและเครื่องมือวัดผลที่มีประสิทธิผลสูง ให้ครูท่านอื่นสามารถสืบค้นและนำไปทดลองใช้ได้ทันที
+            </div>
+          </div>
+
+          <!-- ด้านที่ 3 -->
+          <div class="insight-card" style="border-top: 4px solid var(--color-warning); background: #F8FAFC; padding: 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: #D97706; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-forward" style="font-size: 18px;"></i> ด้านที่ 3: แผนขยายผลวิจัยต่อยอดปี 2569 (Collective Feedforward)
+              </h4>
+              <p style="font-size: 13px; color: var(--color-text-main); margin-bottom: 16px; text-align: justify; line-height: 1.6;">
+                <strong>แนวทางการสังเคราะห์:</strong> นำข้อมูลความเห็นสะท้อนคิดหัวข้อต่อยอด (คอลัมน์ 2.3) มาจัดกลุ่ม (Theme Analysis) เพื่อกำหนดวิสัยทัศน์และการสนับสนุนการยกระดับเครื่องมือวิจัยเดิม
+              </p>
+            </div>
+            <div style="background: #FFFBEB; padding: 14px; border-radius: 8px; font-size: 12.5px; border-left: 4px solid var(--color-warning); color: #92400e; line-height: 1.5;">
+              <strong>ข้อเสนอแนะเชิงลึก:</strong> มีเสียงสะท้อนหลักใน 4 มิติ คือ (1) การเปลี่ยนสื่อสู่ดิจิทัล (Digitalization) เพื่อให้เด็กนำไปทบทวนได้ที่บ้าน (2) การบูรณาการข้ามกลุ่มวิชา (Cross-curricular) (3) การขยายกลุ่มระดับชั้น และ (4) การประเมินผลตามสภาพจริง โรงเรียนควรวางแผนสนับสนุนระบบดิจิทัลและการเชื่อมโยงสื่อนวัตกรรมข้ามวิชา
+            </div>
+          </div>
+
+          <!-- ด้านที่ 4 -->
+          <div class="insight-card" style="border-top: 4px solid #9333EA; background: #F8FAFC; padding: 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: #9333EA; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-sliders" style="font-size: 18px;"></i> ด้านที่ 4: การพัฒนาระบบสนับสนุนการศึกษา (Operational Efficiency)
+              </h4>
+              <p style="font-size: 13px; color: var(--color-text-main); margin-bottom: 16px; text-align: justify; line-height: 1.6;">
+                <strong>แนวทางการสังเคราะห์:</strong> แยกวิเคราะห์สะท้อนคิดในส่วนงานสนับสนุน (ห้องสมุด, ธุรการวัดผล, การรับสมัครนักเรียนใหม่, การจัดการ PLC) เพื่อเพิ่มความสะดวกในการดำเนินงานระบบโรงเรียน
+              </p>
+            </div>
+            <div style="background: rgba(147, 51, 234, 0.08); padding: 14px; border-radius: 8px; font-size: 12.5px; border-left: 4px solid #9333EA; color: #581c87; line-height: 1.5;">
+              <strong>ข้อเสนอแนะเชิงลึก:</strong> ครูสะท้อนความต้องการพัฒนาความสะดวกของระบบรับสมัครเรียนใหม่ให้ใช้งานระบบออนไลน์ที่เข้าถึงง่ายขึ้น และการปรับลดเอกสาร/ปรับฟอร์มกระบวนการ PLC ของฝ่ายวิชาการเพื่อลดภาระงานครูและยกระดับประสิทธิภาพองค์กรแบบ Smart School
+            </div>
+          </div>
+
+          <!-- ด้านที่ 5 -->
+          <div class="insight-card" style="border-top: 4px solid var(--color-success); background: #F8FAFC; padding: 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-soft); display: flex; flex-direction: column; justify-content: space-between; grid-column: span 2;">
+            <div>
+              <h4 style="font-size: 15px; font-weight: 600; color: #16A34A; margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-heart-pulse" style="font-size: 18px;"></i> ด้านที่ 5: วัฒนธรรมองค์กรและคุณภาพ PLC (PLC Culture & Engagement)
+              </h4>
+              <p style="font-size: 13px; color: var(--color-text-main); margin-bottom: 16px; text-align: justify; line-height: 1.6;">
+                <strong>แนวทางการสังเคราะห์:</strong> ประเมินคุณภาพการให้ข้อมูลสะท้อนคิดและความกระตือรือร้นของเพื่อนครู เพื่อใช้วัดระดับความร่วมมือทางวิชาชีพในชุมชนแห่งการเรียนรู้ของโรงเรียน
+              </p>
+            </div>
+            <div style="background: var(--color-success-light); padding: 14px; border-radius: 8px; font-size: 12.5px; border-left: 4px solid var(--color-success); color: #166534; line-height: 1.5;">
+              <strong>ข้อเสนอแนะเชิงลึก:</strong> ความคิดเห็นของครูมีลักษณะเป็นเชิงสนับสนุน ชื่นชม และให้คำแนะนำเชิงพัฒนาในฐานะกัลยาณมิตรอย่างเข้มแข็ง สอดรับกับคะแนนประสิทธิผลของนวัตกรรมที่เฉลี่ยสูงถึง 4.50 คะแนน บ่งบอกถึงวัฒนธรรมการช่วยเหลือและการพัฒนาครูร่วมกันที่มีคุณภาพสูง ฝ่ายบริหารควรจัดสรรคาบและสนับสนุนเวลาการแลกเปลี่ยนเรียนรู้นี้ต่อไป
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Detail Modal Dialog -->
+  <div id="detailModal" class="modal-backdrop" onclick="closeModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">
+          <h2 id="modalTeacher">ครูผู้เสนอผลงาน</h2>
+          <p id="modalTopic">ชื่องานวิจัยในชั้นเรียน</p>
+        </div>
+        <button class="modal-close" onclick="closeModal(event)"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        
+        <div class="modal-section" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+          <div class="content-box" style="border-left-color: var(--color-primary); background: #EEF2F6;">
+            <strong>กลุ่มสาระ/ฝ่าย</strong><br>
+            <span id="modalDept">-</span>
+          </div>
+          <div class="content-box" style="border-left-color: var(--color-secondary); background: #EEF2F6;">
+            <strong>ระดับชั้น</strong><br>
+            <span id="modalLevel">-</span>
+          </div>
+          <div class="content-box" style="border-left-color: var(--color-warning); background: #EEF2F6;">
+            <strong>คะแนนประสิทธิผลเฉลี่ย</strong><br>
+            <span id="modalScore">-</span>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-title-mod"><i class="fa-solid fa-tags"></i> คำสำคัญ (Keywords)</div>
+          <div class="content-box" id="modalKeywords">-</div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-title-mod"><i class="fa-solid fa-thumbs-up" style="color: var(--color-success);"></i> ความเห็นสะท้อนคิด: จุดเด่นของผลงานวิจัย / นวัตกรรม</div>
+          <div class="content-box strengths-box" id="modalStrengths" style="max-height: 200px; overflow-y: auto;">
+            <!-- Appended strengths -->
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <div class="section-title-mod"><i class="fa-solid fa-rocket" style="color: var(--color-warning);"></i> ความเห็นสะท้อนคิด: ไอเดียต่อยอดเพื่อขยายผลวิจัยในปี 2569 (Feedforward)</div>
+          <div class="content-box future-box" id="modalFuture" style="max-height: 200px; overflow-y: auto;">
+            <!-- Appended future ideas -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global Data Holders
+    var allData = [];
+    var filteredData = [];
+    var projectsList = [];
+    var deptChartInstance = null;
+    var levelChartInstance = null;
+    var scoreChartInstance = null;
+
+    // Initialize Page
+    document.addEventListener("DOMContentLoaded", function() {
+      // Check if running within Google Apps Script or Standalone HTML
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+          .withSuccessHandler(function(dataString) {
+            document.getElementById("sourceBadge").innerHTML = '<i class="fa-solid fa-sheet-plastic"></i> แหล่งข้อมูล: Google Sheets (เรียลไทม์)';
+            initDashboardData(JSON.parse(dataString));
+          })
+          .withFailureHandler(function(err) {
+            showError("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + err.message);
+            loadLocalDemoData();
+          })
+          .getDashboardData();
+      } else {
+        // Fallback to local demo data
+        document.getElementById("sourceBadge").innerHTML = '<i class="fa-solid fa-circle-info"></i> แหล่งข้อมูล: ข้อมูลจำลอง (Demo Mode)';
+        loadLocalDemoData();
+      }
+    });
+
+    // Fallback Mock Data in case Apps Script is not running
+    function loadLocalDemoData() {
+      // Simulate API lag
+      setTimeout(function() {
+        var mockData = [
+    {
+        "ประทับเวลา":  "20/6/2026, 9:04:03",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "2นางสาวบัณฑิตา อินอร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "2 การพัฒนาการอ่านคำศัพท์ภาษาอังกฤษ โดยใช้แบบฝึกทักษะ Word Family Eของนักเรียนชั้นประถมศึกษาปีที่5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อนวัตกรรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การใช้สื่อนวัตกรรมนอกเหนือจากแบบฝึกทักษะ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:06:10",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "2นางสาวบัณฑิตา อินอร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "2 การพัฒนาการอ่านคำศัพท์ภาษาอังกฤษ โดยใช้แบบฝึกทักษะ Word Family Eของนักเรียนชั้นประถมศึกษาปีที่5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อที่ใช้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "สื่อที่น่าสนใจ จะทำให้นักเรียนมีความสนใจในการเรียนรู้ และมีผลการเรียนดีขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:06:13",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "2นางสาวบัณฑิตา อินอร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "2 การพัฒนาการอ่านคำศัพท์ภาษาอังกฤษ โดยใช้แบบฝึกทักษะ Word Family Eของนักเรียนชั้นประถมศึกษาปีที่5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความสำคัญในการสื่อสาร",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ฝึกทักษะโดยการอ่านและการเขียน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:06:18",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "2นางสาวบัณฑิตา อินอร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "2 การพัฒนาการอ่านคำศัพท์ภาษาอังกฤษ โดยใช้แบบฝึกทักษะ Word Family Eของนักเรียนชั้นประถมศึกษาปีที่5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "บอร์ดเกม ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เครืองมือมีความสอดคล้องกับวัตถุประสงค์ดี มีผลเห็นชัดเจน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "อาจจะมีการติดตามข้อมูลและต่อยอดต่อไป"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:08:41",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "2นางสาวบัณฑิตา อินอร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "2 การพัฒนาการอ่านคำศัพท์ภาษาอังกฤษ โดยใช้แบบฝึกทักษะ Word Family Eของนักเรียนชั้นประถมศึกษาปีที่5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "บอร์ดเกม",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "Active learning ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำเครืองมือของผู้วิจัย นำไปต่อยอดให้เกิดการพัฒนานักเรียนในปีต่อไป "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:19:26",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "3นางสาวอรวรรณ ศักดิ์ใหญ่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "3 การศึกษาผลของการใช้กิจกรรมสร้างโมเดล 3 มิติ เพื่อส่งเสริมความเข้าใจเรื่องของสิ่งมีชีวิตและสิ่งแวดล้อม ระดับชั้นประถมศึกษาปีที่ 5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "โมเดล 3 มิติ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "สื่อนวัตกรรมมีความน่าสนใจเหมาะสมกับตัวนักเรียนแต่ละคน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรพัฒนาต่อยอดในการทำวิจัยปี 2569"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:20:00",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "3นางสาวอรวรรณ ศักดิ์ใหญ่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "3 การศึกษาผลของการใช้กิจกรรมสร้างโมเดล 3 มิติ เพื่อส่งเสริมความเข้าใจเรื่องของสิ่งมีชีวิตและสิ่งแวดล้อม ระดับชั้นประถมศึกษาปีที่ 5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "กิจกรรมมีความสนใจ น่าค้นหา",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำผลการพัฒนาจากสื่อที่ใช้ในการดำเนินการจัดกิจกรรมให้เด็กได้รู้และเห็นของเพื่อนคนอื่นๆ ด้วย"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:21:18",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "3นางสาวอรวรรณ ศักดิ์ใหญ่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "3 การศึกษาผลของการใช้กิจกรรมสร้างโมเดล 3 มิติ เพื่อส่งเสริมความเข้าใจเรื่องของสิ่งมีชีวิตและสิ่งแวดล้อม ระดับชั้นประถมศึกษาปีที่ 5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การสร้างสื่อModel ที่ทันสมัยขึ้น",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เด็กได้ลงมือทำจริง มีความสนุกสนานและได้ความรู้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ลองนำไปปรับใช้กับชั้นที่เล็กลง เช่นป.1-3 "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:35:20",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "5นางพัชรี เลือดสยาม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "5 การพัฒนาทักษะการเขียนคำศัพท์ภาษาอังกฤษโดยใช้ชุดแบบฝึกนวัตกรรมของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ชุดแบบฝึกทักษะการเขียนคำศัพท์ภาษาอังกฤษ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การทดสอบวัดผลอย่างสม่ำเสมอ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:35:30",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "5นางพัชรี เลือดสยาม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "5 การพัฒนาทักษะการเขียนคำศัพท์ภาษาอังกฤษโดยใช้ชุดแบบฝึกนวัตกรรมของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "นักเรียนมีนวัตกรรมเขียนคำศัภาษาอังกฤษได้ดีขึ้น",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ทำให้นักเรียนสามารถใช้เครื่องมือนวัตกรรมนี้ได้ดี",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "สามารถนำไปต่อยอดกับรายวิชาอื่นได้"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:35:36",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "5นางพัชรี เลือดสยาม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "5 การพัฒนาทักษะการเขียนคำศัพท์ภาษาอังกฤษโดยใช้ชุดแบบฝึกนวัตกรรมของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีสื่อนวัตกรรมที่เป็นรูปแบบที่ชัดเจน นักเรียนสามารถเกิดการเรียนรู้ได้จริง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำชุดแบบฝึกนวัตกรรมไปใช้ต่อยอดในระดับชั้นอื่นๆ เพื่อให้นักเรียนเกิดการเรียนรู้เพิ่มขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:36:00",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "5นางพัชรี เลือดสยาม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "5 การพัฒนาทักษะการเขียนคำศัพท์ภาษาอังกฤษโดยใช้ชุดแบบฝึกนวัตกรรมของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ชุดพัฒนาฝึกทักษะการเขียนคำศัพท์nEnglish ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อการสอน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรต่อยอดในระดับประถมศึกษาปีที่1 เพื่อส่งเสริมการอ่านของนักเรียน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:38:01",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "5นางพัชรี เลือดสยาม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "5 การพัฒนาทักษะการเขียนคำศัพท์ภาษาอังกฤษโดยใช้ชุดแบบฝึกนวัตกรรมของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "นักเรียนสามารถรู้คำศัพท์พื้นฐานของวิชาภาษาอังกฤษ ป.3 ได้",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีนวัตกรรมที่มีความน่าสนใจ และมีเครื่องมือวัดผลที่ชัดเจน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "เสริมสร้างบรรยากาศในห้องเรียนให้เหมาะสม"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:54:40",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "6นายธนาธิป ศรีนารี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "6 การพัฒนาผลสัมฤทธิ์ทางการเรียนวิชาวิทยาศาสตร์ เรื่องระบบสุริยะ โดยใช้แบบจำลองความคิดจากโมเดล ของนักเรียนชั้นประถมศึกษาปีที่ 4/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.4",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "เทคโนโลยีเสมือนจริง (AR)",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อนวัตกรรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ไอเดียการนำนวัตกรรมนี้ไปปรับใช้ในวิชาอื่น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:55:18",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "6นายธนาธิป ศรีนารี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "6 การพัฒนาผลสัมฤทธิ์ทางการเรียนวิชาวิทยาศาสตร์ เรื่องระบบสุริยะ โดยใช้แบบจำลองความคิดจากโมเดล ของนักเรียนชั้นประถมศึกษาปีที่ 4/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.4",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบจำลอง",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีสื่อนวัตกรรมที่มีความน่าสนใจในการนำการเรียนรู้ที่ทำให้นักเรียนสามารถเรียนรู้และเข้าใจในเนื้อหาอย่างมีความสุข",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำสื่อนวัตกรรมเผยแพร่ให้กับคุณครูรายวิชาอื่น ๆ เพื่อนำไปใช้ปรับสอนนักเรียนในการเรียนรู้"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:55:21",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "6นายธนาธิป ศรีนารี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "6 การพัฒนาผลสัมฤทธิ์ทางการเรียนวิชาวิทยาศาสตร์ เรื่องระบบสุริยะ โดยใช้แบบจำลองความคิดจากโมเดล ของนักเรียนชั้นประถมศึกษาปีที่ 4/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.4",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "โมเดล",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เป็นกิจกรรมที่น่าสนใจสำหรับเด็ก ๆ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรลองทำในระดับชั้นต่าง ๆ ให้มากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:56:17",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "6นายธนาธิป ศรีนารี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "6 การพัฒนาผลสัมฤทธิ์ทางการเรียนวิชาวิทยาศาสตร์ เรื่องระบบสุริยะ โดยใช้แบบจำลองความคิดจากโมเดล ของนักเรียนชั้นประถมศึกษาปีที่ 4/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.4",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ใช้แบบจำลองความคิดโมเดล",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "สื่อโมเดลมีความน่าสนใจ มีการนำแบบทดสอบมาช่วยวัดยวัดการเรียนรู้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำการสร้างสื่อนวัตกรรม 3 มิติมาใช้ในรายวิชาที่สอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 9:56:37",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "6นายธนาธิป ศรีนารี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "6 การพัฒนาผลสัมฤทธิ์ทางการเรียนวิชาวิทยาศาสตร์ เรื่องระบบสุริยะ โดยใช้แบบจำลองความคิดจากโมเดล ของนักเรียนชั้นประถมศึกษาปีที่ 4/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.4",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Stem",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ไปใข้ในวิชาอื่นๆ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำไปต่อยอดวิชาอื่นๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:10:01",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "7นางสาวจารุวรรณ ศรีใจ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "7 การเปรียบเทียบผลสัมฤทธิ์ทางการเรียน ของนักเรียนระดับประถมศึกษาปีที่ 5/ 3 เรื่องการอ่านจับใจความสำคัญ โดยการเรียนรู้แบบร่วมมือด้วยเทคนิค STAD ร่วมกับแบบฝึกทักษะ",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ขั้นตอนกระบวนการ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ไปจับคู่กับวิชาอื่นๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:10:18",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "7นางสาวจารุวรรณ ศรีใจ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "7 การเปรียบเทียบผลสัมฤทธิ์ทางการเรียน ของนักเรียนระดับประถมศึกษาปีที่ 5/ 3 เรื่องการอ่านจับใจความสำคัญ โดยการเรียนรู้แบบร่วมมือด้วยเทคนิค STAD ร่วมกับแบบฝึกทักษะ",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การอ่านจับใจความโดยใช้ วิธี STAD",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อนวัตกรรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำนวัตกรรมนี้ไปปรับใช้ในวิชาอื่น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:10:46",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "7นางสาวจารุวรรณ ศรีใจ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "7 การเปรียบเทียบผลสัมฤทธิ์ทางการเรียน ของนักเรียนระดับประถมศึกษาปีที่ 5/ 3 เรื่องการอ่านจับใจความสำคัญ โดยการเรียนรู้แบบร่วมมือด้วยเทคนิค STAD ร่วมกับแบบฝึกทักษะ",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การใช้ STEM",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีความน่าสนใจสำหรับการฝึกให้นักเรียนเกิดทักษะการอ่านจับใจความ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรนำไปต่อยอดในการอ่านในระดับชั้นต่อไปและรายวิชาอื่น ๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:11:49",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "7นางสาวจารุวรรณ ศรีใจ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "7 การเปรียบเทียบผลสัมฤทธิ์ทางการเรียน ของนักเรียนระดับประถมศึกษาปีที่ 5/ 3 เรื่องการอ่านจับใจความสำคัญ โดยการเรียนรู้แบบร่วมมือด้วยเทคนิค STAD ร่วมกับแบบฝึกทักษะ",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การเรียนรู้แบบร่วมมือด้วยเทคนิค STAD ร่วมกับแบบฝึกทักษะ ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการใช้เทคนิค STAD ร่วมกับแบบฝึกทักษะมีการนำเสนอ ทำงานเป็นกลุ่มและได้ผลการวิจัยที่ชัดเจน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำการวิจัยไปต่อยอดในรายวิชาที่ตนเองสอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:35:48",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "8นายรุ่งโรจน์ กันโท",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "8 การพัฒนาทักษะการเรียนรู้เรื่องการอ่านผันวรรณยุกต์อักษร 3 หมู่ โดยใช้สื่อการสอนสำเร็จรูป สำหรับนักเรียนชั้นประถมศึกษาปีที่ 1/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "บัตรคำ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เครื่องมือวัดที่ตอบโจทย์",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การนำทักษะการฝึกอ่านไปประยุกต์ใช้ในการฝึกทักษะการอ่านของนักเรียนที่อ่านไม่ค่อยได้"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:37:39",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "8นายรุ่งโรจน์ กันโท",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "8 การพัฒนาทักษะการเรียนรู้เรื่องการอ่านผันวรรณยุกต์อักษร 3 หมู่ โดยใช้สื่อการสอนสำเร็จรูป สำหรับนักเรียนชั้นประถมศึกษาปีที่ 1/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การอ่านผันวรรณยุกต์อักษร 3 หมู่",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ใช้เครื่องมือที่เหมาะสม ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "อาจจะเพิ่มเครื่องมือวิจัยให้มีความหลากหลาย"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:39:19",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "8นายรุ่งโรจน์ กันโท",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "8 การพัฒนาทักษะการเรียนรู้เรื่องการอ่านผันวรรณยุกต์อักษร 3 หมู่ โดยใช้สื่อการสอนสำเร็จรูป สำหรับนักเรียนชั้นประถมศึกษาปีที่ 1/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การฝึกทักษะการอ่านผันวรรยุกต์",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ควรเพิ่มเครื่องมือในการวิจัยเป็นในรูปแบบชุดแบบฝึก",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "พัฒนาต่อยอดกับชั้นเรียนที่ทำการวิจัย"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:39:25",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "8นายรุ่งโรจน์ กันโท",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "8 การพัฒนาทักษะการเรียนรู้เรื่องการอ่านผันวรรณยุกต์อักษร 3 หมู่ โดยใช้สื่อการสอนสำเร็จรูป สำหรับนักเรียนชั้นประถมศึกษาปีที่ 1/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การอ่านผันวรรณยุกต์อักษร 3 หมู่",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "พัฒนาแบบฝึกการอ่านผันวรรณยุกต์อักษร 3 หมู่ที่ตรงกับปัญหาของผู้เรียน ช่วยให้เข้าใจหลักการอ่านเป็นลำดับขั้น ส่งผลให้ผลสัมฤทธิ์ทางการเรียนสูงขึ้นอย่างชัดเจน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "พัฒนาแบบฝึกการอ่านผันวรรณยุกต์อักษร 3 หมู่ในรูปแบบดิจิทัลหรือเกมการเรียนรู้ เพื่อเพิ่มความสนใจของผู้เรียนและสามารถนำไปใช้ฝึกทักษะได้ทั้งในห้องเรียนและที่บ้าน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:47:45",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "9นางนัทธียา เดชะ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "9 การศึกษาผลสัมฤทธิ์ทางการเรียน วิชาทักษะภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะ เรื่อง Past Simple Tense ของนักเรียนชั้นประถมศึกษาปีที่ 5/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การใช้ past simple tens",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "แบบฝึกทักษะ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การฝึกฝนที่นำมาต่อยอดในการเรียนรู้ของนักเรียนด้านภาษาอังกฤษในคำง่ายๆที่ใช้ในชีวิตประจำวัน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:55:05",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "9นางนัทธียา เดชะ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "9 การศึกษาผลสัมฤทธิ์ทางการเรียน วิชาทักษะภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะ เรื่อง Past Simple Tense ของนักเรียนชั้นประถมศึกษาปีที่ 5/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ควรเพิ่มเครื่องมือเป็นชุดแบบฝึก",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำรูปแบบกิจกรรมไปปรับใช้ในการสอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:55:13",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "9นางนัทธียา เดชะ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "9 การศึกษาผลสัมฤทธิ์ทางการเรียน วิชาทักษะภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะ เรื่อง Past Simple Tense ของนักเรียนชั้นประถมศึกษาปีที่ 5/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เครื่องมือที่ใช้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ปรับใช้ได้ในหลายๆชั้น และอีกหลายเรื่องเป็นหมวดหมู่ให้นักเรียนเกิดความสนใจ "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:55:52",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "9นางนัทธียา เดชะ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "9 การศึกษาผลสัมฤทธิ์ทางการเรียน วิชาทักษะภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะ เรื่อง Past Simple Tense ของนักเรียนชั้นประถมศึกษาปีที่ 5/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การใช้ past simple tens",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เป็นการส่งเสริมฝึกทักษะการยกผลสัมฤทธิ์ทางเรียนได้อย่างเห็นผล",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "สามารถพัฒนาสื่อในด้านอื่นๆได้"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:58:55",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "10นายสรรเสริญ อาภานิพพัฒิพงศ์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "10 การพัฒนาผลสัมฤทธิ์ทางการเรียน โดยใช้ชุดแบบฝึกทักษะ เรื่อง อาณาจักรรัตนโกสินทร์ สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การพัฒนาชุดเเบบฝึกเพื่อพัฒนาผลสัมฤทธิ์",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "การวิเคราะห์ข้อมูลในการวิจัย",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "สร้างสรรค์สื่อการเรียนที่มีความหน้าสนใจ และเข้าถึงผู้เรียน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:59:29",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "10นายสรรเสริญ อาภานิพพัฒิพงศ์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "10 การพัฒนาผลสัมฤทธิ์ทางการเรียน โดยใช้ชุดแบบฝึกทักษะ เรื่อง อาณาจักรรัตนโกสินทร์ สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความเข้าใจของรัตนโกสินทร์",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ความต่อยอดกับช่วงชั้นอื่น เพื่อความเข้าใจที่ลึกซึ้งและชัดเจน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 10:59:53",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "9นางนัทธียา เดชะ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "9 การศึกษาผลสัมฤทธิ์ทางการเรียน วิชาทักษะภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะ เรื่อง Past Simple Tense ของนักเรียนชั้นประถมศึกษาปีที่ 5/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Pre-test และ Post-test",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "แบบฝึกที่น่าสนใจ สามารถนำรูปแบบไปปรับใช้ในหน่วยอื่นๆได้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "พัฒนาสื่อและแบบฝึกในวิชาที่ได้สอน พัฒนาในระดับชั้นต่อไป     "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:00:29",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "10นายสรรเสริญ อาภานิพพัฒิพงศ์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "10 การพัฒนาผลสัมฤทธิ์ทางการเรียน โดยใช้ชุดแบบฝึกทักษะ เรื่อง อาณาจักรรัตนโกสินทร์ สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ขั้นตอนกระบวนการ Active Listening ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การเล่าเรื่องลำดับขั้นตอนที่เรียงตามเหตุการณ์"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:02:15",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "10นายสรรเสริญ อาภานิพพัฒิพงศ์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "10 การพัฒนาผลสัมฤทธิ์ทางการเรียน โดยใช้ชุดแบบฝึกทักษะ เรื่อง อาณาจักรรัตนโกสินทร์ สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การนำเอาชุดทักษะมาใช้กับนักเรียนได้เป็นอย่างดี",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "แบบฝึกทักษะเพื่อให้เด็กได้ฝึกใช้และเข้าใจง่าย",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ในรายวิชาอื่นสามารถนำไปทำแบบนี้ได้เพิ่มฝึกทักษะการเรียนรู้เพิ่มมากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:03:05",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "10นายสรรเสริญ อาภานิพพัฒิพงศ์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "10 การพัฒนาผลสัมฤทธิ์ทางการเรียน โดยใช้ชุดแบบฝึกทักษะ เรื่อง อาณาจักรรัตนโกสินทร์ สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ปฐมวัย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ชุดแบบฝึกทักษะช่วยให้ผู้เรียนเรียนรู้ผ่านการลงมือปฏิบัติและทบทวนด้วยตนเอง ส่งผลให้ผลสัมฤทธิ์ทางการเรียนหลังเรียนสูงขึ้น",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "พัฒนาการใช้ชุดแบบฝึกทักษะในเนื้อหาอื่นๆ ของสาระประวัติศาสตร์ เพื่อพัฒนาผลสัมฤทธิ์ทางการเรียนอย่างต่อเนื่อง"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:08:58",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "11นางสาวรัชนี เตจารังษี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "11 ผลของการจัดกิจกรรมการเรียนรู้แบบใช้ปัญหาเป็นฐาน (PBL) เพื่อส่งเสริมการแก้ปัญหาด้วยอัลกอริทึมอย่างง่าย ของนักเรียนชั้นประถมศึกษาปีที่ 3/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "การเห็นการพัฒนาของผู้เรียน ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การพัฒนาอย่างเป็นลำดับ เป็นขั้นตอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:09:24",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "11นางสาวรัชนี เตจารังษี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "11 ผลของการจัดกิจกรรมการเรียนรู้แบบใช้ปัญหาเป็นฐาน (PBL) เพื่อส่งเสริมการแก้ปัญหาด้วยอัลกอริทึมอย่างง่าย ของนักเรียนชั้นประถมศึกษาปีที่ 3/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "กิจกรรม PBL",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ฝึกคิดวิเคราะแก้ปัญหา",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ฝึกปฏิบัติเพื่อพัฒนาทักษะผู้เรียน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:09:50",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "11นางสาวรัชนี เตจารังษี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "11 ผลของการจัดกิจกรรมการเรียนรู้แบบใช้ปัญหาเป็นฐาน (PBL) เพื่อส่งเสริมการแก้ปัญหาด้วยอัลกอริทึมอย่างง่าย ของนักเรียนชั้นประถมศึกษาปีที่ 3/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เน้นผู้เรียนได้สัมผัสกับประสบการณ์ใกล้ตัว ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การให้ผู้เรียนได้มีส่วนร่วม"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:10:21",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "11นางสาวรัชนี เตจารังษี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "11 ผลของการจัดกิจกรรมการเรียนรู้แบบใช้ปัญหาเป็นฐาน (PBL) เพื่อส่งเสริมการแก้ปัญหาด้วยอัลกอริทึมอย่างง่าย ของนักเรียนชั้นประถมศึกษาปีที่ 3/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "กิจกรรม PBL",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการวางแผน ในการคิดวิเคราะห์",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "บูรณาร่วมกับรายวิชาอื่นๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:16:06",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "13นายเรืองศักดิ์ บู่แสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "13 การพัฒนาทักษะการเสิร์ฟมือล่างของกีฬาแบดมินตัน โดยใช้แบบฝึกทักษะการเสิร์ฟมือล่างกีฬาแบดมินตันของนักเรียนในระดับชั้นประถมศึกษาชั้นปีที่ 6/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สุขศึกษาและพลศึกษา",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "สื่อการสอนที่ให้นักเรียนได้ฝึกปฏิบัติจริง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำสื่อประเภทวีดีโอ คลิปที่นักเรียนชื่นชอบเกี่ยวกับนักกีฬาจะได้ดึงดูดนักเรียนฝึกและเป็นแบบอย่างที่ดีได้"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:16:35",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "13นายเรืองศักดิ์ บู่แสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "13 การพัฒนาทักษะการเสิร์ฟมือล่างของกีฬาแบดมินตัน โดยใช้แบบฝึกทักษะการเสิร์ฟมือล่างกีฬาแบดมินตันของนักเรียนในระดับชั้นประถมศึกษาชั้นปีที่ 6/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สุขศึกษาและพลศึกษา",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบทดสอบทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "กระบวนการเรียนรู้ได้ลงมือปฏิบัติได้ด้วยตนเอง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "กระบวนการสอนในรูปแบบ Active Learning ในรายวิชาที่สอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:17:07",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "13นายเรืองศักดิ์ บู่แสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "13 การพัฒนาทักษะการเสิร์ฟมือล่างของกีฬาแบดมินตัน โดยใช้แบบฝึกทักษะการเสิร์ฟมือล่างกีฬาแบดมินตันของนักเรียนในระดับชั้นประถมศึกษาชั้นปีที่ 6/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สุขศึกษาและพลศึกษา",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เป็นการส่งเสริมการสร้างทักษะที่ดีให้กับนักเรียนในการทำกิจกรรมการเรียนรู้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำกิจกรรมไปต่อยอดในทักษะกีฬาอื่น ๆ "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:17:13",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "13นายเรืองศักดิ์ บู่แสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "13 การพัฒนาทักษะการเสิร์ฟมือล่างของกีฬาแบดมินตัน โดยใช้แบบฝึกทักษะการเสิร์ฟมือล่างกีฬาแบดมินตันของนักเรียนในระดับชั้นประถมศึกษาชั้นปีที่ 6/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สุขศึกษาและพลศึกษา",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การฝึกมือล่าง",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความตั้งใจความพยายามที่จะทำให้ได้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ฝึกท่าอื่นๆเพิ่มเติม"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:18:32",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "13นายเรืองศักดิ์ บู่แสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "13 การพัฒนาทักษะการเสิร์ฟมือล่างของกีฬาแบดมินตัน โดยใช้แบบฝึกทักษะการเสิร์ฟมือล่างกีฬาแบดมินตันของนักเรียนในระดับชั้นประถมศึกษาชั้นปีที่ 6/3",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สุขศึกษาและพลศึกษา",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกทักษะการเสิร์ฟแบบมือล่าง",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "การลงมือปฏิบัติการเสิร์ฟลูกทำให้นักเรียนได้ลงมือทำจริง ทำให้นักเรียนมีการพัฒนา",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "หากเปลี่ยนมาเป็นนักเรียน ทำเป็นตัวอย่าง(รุ่นพี่)ให้เป็นสื่อการสอนนักเรียนจะมีความสนใจอยากที่จะทำตาม"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:27:38",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "16นางจุรีย์ พึ่งดี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "16 การพัฒนาความสามารถในการแก้โจทย์ปัญหาการบวกและการลบในชีวิตประจำวันของนักเรียนชั้นประถมศึกษาปีที่ 2 โดยใช้สถานการณ์จำลอง (Situation-Based Learning)",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "คณิตศาสตร์",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "สถานการณ์จำลอง",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "สถานการณ์จำลองเป็นสื่อที่นักเรียนจะเกิดความเข้าใจได้อย่างท่องแท้อีกรูปแบบหนึ่ง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การสอนโดยนำไอเดียไปใช้ในการสร้างสถานการณ์จำลองในรายวิชาที่สอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:27:39",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "16นางจุรีย์ พึ่งดี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "16 การพัฒนาความสามารถในการแก้โจทย์ปัญหาการบวกและการลบในชีวิตประจำวันของนักเรียนชั้นประถมศึกษาปีที่ 2 โดยใช้สถานการณ์จำลอง (Situation-Based Learning)",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "คณิตศาสตร์",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "สื่อที่ใช้จริงในชีวิตประจำวัน นักเรียนได้ฝึกปฏิบัติจริง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "จากเรื่องเดียวกันนำไปปรับใช้กับหน่วยการเรียนรู้เรื่องอื่น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:28:24",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "16นางจุรีย์ พึ่งดี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "16 การพัฒนาความสามารถในการแก้โจทย์ปัญหาการบวกและการลบในชีวิตประจำวันของนักเรียนชั้นประถมศึกษาปีที่ 2 โดยใช้สถานการณ์จำลอง (Situation-Based Learning)",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "คณิตศาสตร์",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การแก้โจทย์ปัญหา",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจในการจำลองสถานการณ์บทบาทสมมติ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "สามารถนำไปปรับกับวิชาภาษาอังกฤษ จะได้ทักษะการสื่อสาร"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:29:19",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "16นางจุรีย์ พึ่งดี",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "16 การพัฒนาความสามารถในการแก้โจทย์ปัญหาการบวกและการลบในชีวิตประจำวันของนักเรียนชั้นประถมศึกษาปีที่ 2 โดยใช้สถานการณ์จำลอง (Situation-Based Learning)",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "คณิตศาสตร์",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "สถานการณ์จำลอง",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "นักเรียนได้แสดงบทบาทในการสมบทเป็นพ่อค้าแม่ค้า คนขาย ทำให้นักเรียนสามารถเข้าใจและนำสถานการณ์ที่เกิดขึ้นไปเขียนได้จริงๆ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำการเรียนรู้แบบสถานการณ์ไปใช้ในเรื่องของการแบ่งกลุ่มให้เท่าๆกัน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:35:25",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "14นางสาวกันยกร ปันตา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "14 การพัฒนาการอ่านคำศัพท์พื้นฐานภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะการอ่านของนักเรียนชั้นประถมศึกษาปีที่ 2/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "แบบฝึกเสริมทักษะ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "แบบฝึกเสริมทักษะสามารถจัดการเรียนรู้ให้กับนักเรียนในหลายๆ ชั้นให้เหมาะสมกับแต่ละระดับขั้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:35:33",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "14นางสาวกันยกร ปันตา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "14 การพัฒนาการอ่านคำศัพท์พื้นฐานภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะการอ่านของนักเรียนชั้นประถมศึกษาปีที่ 2/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "กระบวนการสอนมีความน่าสนใจ ส่งเสริมด้านการอ่านและความกล้าในการออกเสียง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำไปปรับใช้หรือนำไปผนวกกับรายวิชาอื่น ๆ "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:36:12",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "14นางสาวกันยกร ปันตา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "14 การพัฒนาการอ่านคำศัพท์พื้นฐานภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะการอ่านของนักเรียนชั้นประถมศึกษาปีที่ 2/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "นักเรียนได้มีการฝึกการอ่านที่หลากหลาย",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "คำศัพท์ภาษาอังกฤษมีจำนวนมาก คุณครูอาจจะมีคลังคำศัพท์และแบ่งเป็นชุดการอ่านที่หลากหลาย"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:37:48",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "14นางสาวกันยกร ปันตา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "14 การพัฒนาการอ่านคำศัพท์พื้นฐานภาษาอังกฤษ โดยใช้แบบฝึกเสริมทักษะการอ่านของนักเรียนชั้นประถมศึกษาปีที่ 2/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.2",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาต่างประเทศ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบฝึกเสริมทักษะ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อสามารถนำไปต่อยอดกับสหวิชาได้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "แบบฝึกเสริมทักษะบรูณาการกับสาระที่เกี่ยวข้อง"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:41:04",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "15นายนิคม พรมเสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "15 การพัฒนาสมรรถนะทางสังคมและทักษะชีวิตในศตวรรษที่ 21 ผ่านชุดกิจกรรมการเรียนรู้ฐานวัฒนธรรมไทย สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "นักเรียนมีการนำเสนอในรูปแบบของนักเรียนที่ได้ไปศึกษา",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การนำไปบูรณาการในวิชาอื่น ที่มีบริบทเดียวกัน "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:42:08",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "15นายนิคม พรมเสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "15 การพัฒนาสมรรถนะทางสังคมและทักษะชีวิตในศตวรรษที่ 21 ผ่านชุดกิจกรรมการเรียนรู้ฐานวัฒนธรรมไทย สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การอยู่ร่วมกับผู้อื่นในสังคม",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ทักษะการอยู่ร่วมกันในสังคม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "บูรณาการกับวิชาอื่นๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:42:29",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "15นายนิคม พรมเสน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "15 การพัฒนาสมรรถนะทางสังคมและทักษะชีวิตในศตวรรษที่ 21 ผ่านชุดกิจกรรมการเรียนรู้ฐานวัฒนธรรมไทย สำหรับนักเรียนชั้นประถมศึกษาปีที่ 6/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ชุดกิจกรรม",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "นักเรียนมีทักษะชีวิต สามารถนำไปต่อยอดได้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "สามารถนำไปใช้ในชีวิตประจำวันได้"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:47:19",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "17นางสาวรัชนีย์ ธรรมศร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "17 อิทธิพลของเพลงกล่อมเด็กที่มีต่อการควบคุมอารมณ์ของนักเรียนชั้นประถมศึกษาปีที่ 1/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศิลปะ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่่อนวัตกรรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ต่อยอดไปวิขาอื่่น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:47:35",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "17นางสาวรัชนีย์ ธรรมศร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "17 อิทธิพลของเพลงกล่อมเด็กที่มีต่อการควบคุมอารมณ์ของนักเรียนชั้นประถมศึกษาปีที่ 1/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศิลปะ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การใช้เพลงกล่อมเด็ก",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีกระบวนการที่น่าสนใจเด็กได้ปฎิบัติจริง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "มีความน่าสนใจและควรลองปรับใช้ในวิชาอื่น ๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:49:12",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "17นางสาวรัชนีย์ ธรรมศร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "17 อิทธิพลของเพลงกล่อมเด็กที่มีต่อการควบคุมอารมณ์ของนักเรียนชั้นประถมศึกษาปีที่ 1/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศิลปะ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เป็นกระบวนการเรียนรู้ที่มีความน่าสนใจ ทำให้นักเรียนเกิดการเรียนรู้ที่ดีขึ้น ผ่านเสียงดนตรี",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำไปประยุกต์ใช้ให้เหมาะสมกับนักเรียนในรายวิชาอื่น ๆ "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:49:14",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "17นางสาวรัชนีย์ ธรรมศร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "17 อิทธิพลของเพลงกล่อมเด็กที่มีต่อการควบคุมอารมณ์ของนักเรียนชั้นประถมศึกษาปีที่ 1/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศิลปะ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "อิทธิพลของเพลงกล่อมเด็กที่มีต่อการควบคุมอารมณ์ของนักเรียน",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการใช้ดนตรีบำบัดนักเรียนให้มีสมาธิ นักเรียนมีสมาธิดีขึ้น สามารถควบคุมอารมณ์ได้ดีขึ้น ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำเพลงเข้าไปในการเรียนการสอนในรายวิชาที่ตนเองสอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:51:42",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "17นางสาวรัชนีย์ ธรรมศร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "17 อิทธิพลของเพลงกล่อมเด็กที่มีต่อการควบคุมอารมณ์ของนักเรียนชั้นประถมศึกษาปีที่ 1/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ดนตรี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ดนตรีบำบัด ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อนวัตกรรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ไอเดียการนำนวัตกรรมนี้ไปปรับใช้ในวิชาอื่น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:53:23",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "18นายวัลลภ จันทิมา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "18 การพัฒนาทักษะการปั้นดินน้ำมันด้วยชุดแบบฝึกกิจกรรมการสร้างสรรค์ ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศิลปะ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ปั้นดินน้ำมัน",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "จินตนาการงมือปฏิบัติ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "เปิดโอกาสให้นักเรียนนำเสนอ ทักษะการสื่อสาร"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:53:29",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "18นายวัลลภ จันทิมา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "18 การพัฒนาทักษะการปั้นดินน้ำมันด้วยชุดแบบฝึกกิจกรรมการสร้างสรรค์ ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศิลปะ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "สร้างสรรค์ผลงานผ่านการปั้น",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "นักเรียนได้ลงมือปฏิบัติจริงทุกคน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ต่อยอดไปสู่รายวิชาคณิตเรื่องรูปทรง "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 11:54:16",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "18นายวัลลภ จันทิมา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "18 การพัฒนาทักษะการปั้นดินน้ำมันด้วยชุดแบบฝึกกิจกรรมการสร้างสรรค์ ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศิลปะ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อนวัตกรรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "มีความชัดเจน.เป็นขั้นตอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:11:11",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "19นายสยาม ปิมปา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "19 การพัฒนาทักษะการคิดเชิงคำนวณ โดยใช้บทเรียนออนไลน์โปรแกรม Pictoblox เรื่อง Human Body Detection ของนักเรียนชั้นประถมศึกษาปีที่ 5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "โปรแกรม pictoblox  , Ai vision",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของสื่อนวัตกรรม ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "สามารถนำไปใช้ในวิชา วิทยาศาสตร์ สุขศึกษา"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:12:26",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "19นายสยาม ปิมปา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "19 การพัฒนาทักษะการคิดเชิงคำนวณ โดยใช้บทเรียนออนไลน์โปรแกรม Pictoblox เรื่อง Human Body Detection ของนักเรียนชั้นประถมศึกษาปีที่ 5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Boardgame",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความสนใจสื่อนวัตกรรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ต่อยอดทำวิจัยปีหน้า"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:14:16",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "19นายสยาม ปิมปา",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "19 การพัฒนาทักษะการคิดเชิงคำนวณ โดยใช้บทเรียนออนไลน์โปรแกรม Pictoblox เรื่อง Human Body Detection ของนักเรียนชั้นประถมศึกษาปีที่ 5/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ใช้บทเรียนออนไลน์โปรแกรม Pictoblox เรื่อง Human Body Detection",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการใช้สื่อนวัตกรรมมาใช้ นักเรียนมีการเข้าใจการใช้โปรแกรม",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำสื่อนวัตกรรมสื่อดิจิทัลมาใช้ในรายวิชาที่สอน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:19:28",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "20นางสาวกัลย์สุดา พนมไพร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "17 อิทธิพลของเพลงกล่อมเด็กที่มีต่อการควบคุมอารมณ์ของนักเรียนชั้นประถมศึกษาปีที่ 1/1",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ช่วยส่งเสริมการเขียนสะกดคำได้ถูกต้อง",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการจัดการเรียนการสอนที่มีประสิทธิภาพมากขึ้น",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรให้รูปแบบที่หลากหลาย เพื่อให้ได้ผลที่ชัดเจนมากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:20:19",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "20นางสาวกัลย์สุดา พนมไพร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "20 การพัฒนาทักษะการเขียนสะกดคำของนักเรียนชั้นประถมศึกษาปีที่ 3 โดยใช้เกมภาษา",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การใช้เกม",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจของเกม ทำให้เด็กมีความสนุกสนานในการเรียน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ลองให้เด็กออกแบบเกมที่อยากเล่นว่าเป็นรูปแบบไหน แล้วครูนำไปปรับให้เข้ากับเด็กแต่ละระดับชั้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:21:08",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "20นางสาวกัลย์สุดา พนมไพร",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "20 การพัฒนาทักษะการเขียนสะกดคำของนักเรียนชั้นประถมศึกษาปีที่ 3 โดยใช้เกมภาษา",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "เกมเพื่อพัฒนาการเขียน",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "นักเรียนสามารถพัฒนาการเขียนได้พร้อมๆกับความสนุกในการเรียน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ให้นักเรียนแต่ละคนหาคำศัพท์ในชีวิตประจำวันที่มักใช้ผิดให้เข้ามาอยู่ในชุด"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:27:43",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "21นายศุภฤกษ์ ลวน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "21 การพัฒนาผลสัมฤทธิ์ทางการเรียนและเสริมสร้างการเรียนรู้เรื่องภาษี โดยใช้เกมเศรษฐี ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active learning ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการทดสอบก่อนเรียน-หลังเรียน เด็กได้เกิดการเรียนรู้จริงและเห็นผลชัดเจน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรมีการส่งเสริมต่อยอดให้นักเรียนเกิดการเรียนรู้อย่างสม่ำเสมอ และนำเครื่องมือไปใช่กับห้องอื่น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:28:50",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "21นายศุภฤกษ์ ลวน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "21 การพัฒนาผลสัมฤทธิ์ทางการเรียนและเสริมสร้างการเรียนรู้เรื่องภาษี โดยใช้เกมเศรษฐี ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "สร้างความรู้ให้เเก่นักเรียนเรื่องภาษี ผ่านกิจกรรมเกมเศรษฐี",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "การใช้เกมเศรษฐีมาเป็นกิจกรรม เพื่อให้นักเรียนได้เกิดการเรียนรู้เรื่องภาษี",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "คุณครูสามารถใช้กิจกรรมอื่น ในการเรียนรู้เรื่องภาษี"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:29:13",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "21นายศุภฤกษ์ ลวน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "21 การพัฒนาผลสัมฤทธิ์ทางการเรียนและเสริมสร้างการเรียนรู้เรื่องภาษี โดยใช้เกมเศรษฐี ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "เรียนรู้โดยการเล่นเกม",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เกม เป็นสื่อที่ทำให้เด็กมีความกระตือรือร้นและสนใจในการเรียนมากขึ้น",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ยกตัวอย่างภาษีที่นักเรียนต้องจ่ายในชีวิตประจำวัน เช่นการซื้อของเราต้องจ่ายเท่าไหร่ ภาษีเท่าไหร่ ให้เด็กได้เรียนรู้"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:30:14",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "21นายศุภฤกษ์ ลวน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "21 การพัฒนาผลสัมฤทธิ์ทางการเรียนและเสริมสร้างการเรียนรู้เรื่องภาษี โดยใช้เกมเศรษฐี ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "บอร์ดเกม",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "สื่อนวัตกรรมที่น่าสนใจ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การนำไปใช้ในรายวิชาอื่นๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:30:56",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "21นายศุภฤกษ์ ลวน",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "21 การพัฒนาผลสัมฤทธิ์ทางการเรียนและเสริมสร้างการเรียนรู้เรื่องภาษี โดยใช้เกมเศรษฐี ของนักเรียนชั้นประถมศึกษาปีที่ 3/2",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "สังคมศึกษาฯ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "มีความรู้เกี่ยวกับภาษีโดยการเล่นเกม",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีเครื่องมือการวัดผลที่ดีและมีการเรียนรู้ที่นักเรียนสมารถนำไปใช้ได้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "เด็กๆได้เรียนรู้เรื่องของภาษีและมีสื่อที่น่าสนใจ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:36:56",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "22นางสาวสุภารัตน์ สังขวรรณ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "22 การศึกษาความสนใจและพฤติกรรมการยืมหนังสือตามหมวดหมู่ระบบทศนิยมดิวอี้ นักเรียนระดับมัธยมศึกษา โรงเรียนฉือจี้เชียงใหม่",
+        "1.3 ระดับชั้นที่ทำ":  "ม.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ห้องสมุดมัธยม",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ความสนใจในการอ่านหนังสือของมัธยมตามหมวดหมูดิวอี้",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ขั้นตอนกระบวนการ Active Learning",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การแยกหมวดหมู่ให้ตรงความต้องการของนักเรียนให้มีประสิทธิภาพ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:37:12",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "22นางสาวสุภารัตน์ สังขวรรณ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "22 การศึกษาความสนใจและพฤติกรรมการยืมหนังสือตามหมวดหมู่ระบบทศนิยมดิวอี้ นักเรียนระดับมัธยมศึกษา โรงเรียนฉือจี้เชียงใหม่",
+        "1.3 ระดับชั้นที่ทำ":  "ม.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "บุคลากร",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active Learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ใช้ข้อมูลจากสถิติการยืมหนังสือร่วมกับแบบสอบถามความสนใจ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "จัดกิจกรรมส่งเสริมการอ่านตามช่วงวัย"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:42:36",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "22นางสาวสุภารัตน์ สังขวรรณ",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "22 การศึกษาความสนใจและพฤติกรรมการยืมหนังสือตามหมวดหมู่ระบบทศนิยมดิวอี้ นักเรียนระดับมัธยมศึกษา โรงเรียนฉือจี้เชียงใหม่",
+        "1.3 ระดับชั้นที่ทำ":  "ม.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "กิจกรรมพัฒนาผู้เรียน",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ให้นักเรียนมีการรักการอ่านมากขึ้น",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการใช้เครื่องมือที่จัดเก็บหนังสือและการยืมจากนักเรียนมีการตรวจสอบของข้อมูลได้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "เป็นการตรวจสอบพฤติกรรมการยืมหนังสือและจัดการข้อมูลของระบบได้ดีมากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:50:56",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "23นางสาวสุรัสวดี ดอกกุ่ม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "23 การศึกษาความพึงพอใจของนักเรียนระดับประถมศึกษาตอนปลายที่มีต่อกิจกรรมบันทึกรักการอ่านโรงเรียนฉือจี้เชียงใหม่",
+        "1.3 ระดับชั้นที่ทำ":  "ม.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ภาษาไทย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "Active learning",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีกระบวนการทำให้เด็กมีส่วนร่วม ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "มีเทคนิคทำให้เด็กพัฒนาในการรักการอ่าน "
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:51:42",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "23นางสาวสุรัสวดี ดอกกุ่ม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "23 การศึกษาความพึงพอใจของนักเรียนระดับประถมศึกษาตอนปลายที่มีต่อกิจกรรมบันทึกรักการอ่านโรงเรียนฉือจี้เชียงใหม่",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "กิจกรรมพัฒนาผู้เรียน",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การรักการอ่านของนักเรียน",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เน้นให้นักเรียนได้เรียนรู้เเละลงมือปฏิบัติคือการอ่าน และการบันทึกการอ่านของนักเรียน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรหาหนังสือในการทำกิจกรรมรักการอ่าน ที่มีเหมาะสมในเเต่ละระดับชั้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:52:20",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "23นางสาวสุรัสวดี ดอกกุ่ม",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "23 การศึกษาความพึงพอใจของนักเรียนระดับประถมศึกษาตอนปลายที่มีต่อกิจกรรมบันทึกรักการอ่านโรงเรียนฉือจี้เชียงใหม่",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ศูนย์การเรียนรู้ห้องสมุด",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ส่งเสริมการรักการอ่าน",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ห้องสมุดมีหนังสือหบากหลาย",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ออกแบบบันทึกให้มีความน่าสนใจมากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:58:53",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "24นางสาวกนกวรรณ วงค์จันทร์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "24 การศึกษาความพึงพอใจต่อการให้บริการด้านการตรวจข้อสอบให้แก่ครูผู้สอน",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "งานธุรการ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ความพึงพอใจ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ขั้้นตอนกระบวนการนำไปใช้",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ไปใช้งานหรือกิจกรรมอื่นๆ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:59:18",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "24นางสาวกนกวรรณ วงค์จันทร์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "24 การศึกษาความพึงพอใจต่อการให้บริการด้านการตรวจข้อสอบให้แก่ครูผู้สอน",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "งานบุคล",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ความพึงพอใจ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีกระบวนการทำงานที่เป็นขั้นตอน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำพัฒนาขั้นตอนที่เป็นระบบให้มากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 13:59:37",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "24นางสาวกนกวรรณ วงค์จันทร์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "24 การศึกษาความพึงพอใจต่อการให้บริการด้านการตรวจข้อสอบให้แก่ครูผู้สอน",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ฝ่ายทะเบียนวัดผล",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "แบบสำรวจความพึงพอใจ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความน่าสนใจในการใช้เครื่องมือในการวัดผล",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำผลที่ได้กลับไปพัฒนาต่อยอดให้ดียิ่งขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:02:10",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "24นางสาวกนกวรรณ วงค์จันทร์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "24 การศึกษาความพึงพอใจต่อการให้บริการด้านการตรวจข้อสอบให้แก่ครูผู้สอน",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "บุคลากร ธุรการ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ความพึงพอใจ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความพึงพอใจในกระบวนการ และขั้นตอน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "พัฒนาต่อยอดในการทำวิจัยปี 2569 ต่อไป"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:02:13",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "24นางสาวกนกวรรณ วงค์จันทร์",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "24 การศึกษาความพึงพอใจต่อการให้บริการด้านการตรวจข้อสอบให้แก่ครูผู้สอน",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ทะเบียน",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ขั้นตอนการทำงาน",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "เครื่องมือการวัด",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ขั้นตอนการดำเนินการตรวจข้อสอบ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:05:53",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "25นางสาวดรุณี รักแม่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "25 การสำรวจความพึงพอใจของผู้ปกครองและนักเรียนต่อกระบวนการรับสมัครนักเรียนใหม่ ปีการศึกษา 2569",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "กิจกรรมพัฒนาผู้เรียน",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การให้บริการ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "การให้บริการที่มีความน่าพึงพอใจ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ความพึงพอใจต่อผู้รับบริการ"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:05:55",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "25นางสาวดรุณี รักแม่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "25 การสำรวจความพึงพอใจของผู้ปกครองและนักเรียนต่อกระบวนการรับสมัครนักเรียนใหม่ ปีการศึกษา 2569",
+        "1.3 ระดับชั้นที่ทำ":  "ม.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "งานฝ่ายบุคคล",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การสอบถามความพึงพอใจ",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการสำรวจที่ครอบคลุมที้งนักเรียนและผู้ปกครอง",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรนำระบบการรับนักเรียนไปใช้ให้หลากหลายวิธีมากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:07:56",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "25นางสาวดรุณี รักแม่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "25 การสำรวจความพึงพอใจของผู้ปกครองและนักเรียนต่อกระบวนการรับสมัครนักเรียนใหม่ ปีการศึกษา 2569",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ปฐมวัย",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การเก็บข้อมูลและพัฒนาต่อไป",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีกระบวนการขั้นตอน เทคนิค และการพัฒนาต่อไป",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ดึงดูดแนะนำกิจกรรมที่เกี่ยวข้องกับวิชาของตนเอง"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:09:23",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "25นางสาวดรุณี รักแม่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "25 การสำรวจความพึงพอใจของผู้ปกครองและนักเรียนต่อกระบวนการรับสมัครนักเรียนใหม่ ปีการศึกษา 2569",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "งานวัดผลและทะเบียน",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ความพึงพอใจของผู้ปกครองและนักเรียนต่อกระบวนการรับสมัครนักเรียนใหม่",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการเก็บข้อมูลอย่างเป็นระบบ สามารถให้ข้อมูลอย่างเป็นระบบ มีความอ่อนน้อมถ่อมตน ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ควรพัฒนาระบบการรับสมัครให้ทันสมัยมากขึ้น เพื่อให้ผู้ปกครอง ผู้ที่สนใจเข้าถึงได้ง่าย"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:09:27",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "25นางสาวดรุณี รักแม่",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "25 การสำรวจความพึงพอใจของผู้ปกครองและนักเรียนต่อกระบวนการรับสมัครนักเรียนใหม่ ปีการศึกษา 2569",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ฝ่ายทะเบียน",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "ความพึงพอใจการรับสมัครนักเรียนใหม่",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ความพึงพอใจของผู้ปกครองและนักเรียนต่อการรับสมัครนักเรียนใหม่",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "รายละเอียดแบบสอบถามมีความชัดเจน ครบถ้วน"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:16:09",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "26นางพัชรี ปันชัย",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "26 การพัฒนาแนวทางการจัดการเรียนรู้ โดยใช้แนวคิดชุมชนแห่งการเรียนรู้ทางวิชาชีพครู  (PLC)ของครูผู้สอนระดับประถมศึกษา",
+        "1.3 ระดับชั้นที่ทำ":  "ป.3",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ทุกกลุ่มสาระ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "การนิเทศการสอน",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "ปฏิสัมพันธ์ และเรียนรู้การสอนแลกเปลี่ยนในกลุ่มสาระ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ปรับเอกสารแบบฟอร์มให้เข้าใจง่าย"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:18:19",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "26นางพัชรี ปันชัย",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "26 การพัฒนาแนวทางการจัดการเรียนรู้ โดยใช้แนวคิดชุมชนแห่งการเรียนรู้ทางวิชาชีพครู  (PLC)ของครูผู้สอนระดับประถมศึกษา",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ฝ่ายวิชาการประถม",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "PLC",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการวางแผนแนวทางการจัดการที่ดี และน่าสนใจ",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "นำผลที่ได้ปรับใช้ และพัฒนาอย่างต่อเนื่อง"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:19:16",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "26นางพัชรี ปันชัย",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "26 การพัฒนาแนวทางการจัดการเรียนรู้ โดยใช้แนวคิดชุมชนแห่งการเรียนรู้ทางวิชาชีพครู  (PLC)ของครูผู้สอนระดับประถมศึกษา",
+        "1.3 ระดับชั้นที่ทำ":  "ป.1",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิชาการ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "PLC",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "4",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "มีการพัฒนาการเรียนการสอนดีขึ้น",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "อาจจะมีงบประสนับสนุนในการจัดกิจกรรม PLC เพื่อให้มีประสิทธิภาพมากขึ้น"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:20:34",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "26นางพัชรี ปันชัย",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "26 การพัฒนาแนวทางการจัดการเรียนรู้ โดยใช้แนวคิดชุมชนแห่งการเรียนรู้ทางวิชาชีพครู  (PLC)ของครูผู้สอนระดับประถมศึกษา",
+        "1.3 ระดับชั้นที่ทำ":  "ป.5",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "วิทยาศาสตร์และเทคโนโลยี",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "PLC",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "การจัดการเรียนรู้ของครูผู้สอน มีการพัฒนา ส่งเสริมที่ดี",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "การพูดคุย เสนอข้อคิดเห็น เป็นรูปแบบการจัดการเรียนรู้ อีก1วิธี"
+    },
+    {
+        "ประทับเวลา":  "20/6/2026, 14:20:37",
+        "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "26นางพัชรี ปันชัย",
+        "1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)":  "26 การพัฒนาแนวทางการจัดการเรียนรู้ โดยใช้แนวคิดชุมชนแห่งการเรียนรู้ทางวิชาชีพครู  (PLC)ของครูผู้สอนระดับประถมศึกษา",
+        "1.3 ระดับชั้นที่ทำ":  "ป.6",
+        "1.4 กลุ่มสาระที่สอดคล้อง":  "ฝ่ายวิชาการ",
+        "1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้":  "PLC",
+        "2.1 ประเด็นที่ 1: ความตรงจุดของนวัตกรรมและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา (1-5 คะแนน)  ":  "5",
+        "2.2  ประเด็นที่ 2: เจาะลึกจุดเด่น (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล) ที่ทำได้ดีที่สุด":  "การแลกเปลี่ยนเรียนรู้ในกลุ่มสาระทำให้คุณครูร่วมกันแก้ไขปัญหามีการแบ่งปันร่วมกัน",
+        "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ศึกษาให้เข้าใจและนำไปปรับใช้ในการเรียนการสอนในแต่ละหัวข้อของวิชาตัวเอง"
+    }
+];
+        
+        initDashboardData(mockData);
+      }, 500);
+    }
+
+    // Process & Normalize incoming raw data
+    function initDashboardData(rawData) {
+      allData = rawData.map(function(row) {
+        // Find key names dynamically since they contain spaces
+        var keyScore = Object.keys(row).find(k => k.includes("2.1"));
+        var keyStrengths = Object.keys(row).find(k => k.includes("2.2"));
+        var keyFuture = Object.keys(row).find(k => k.includes("2.3"));
+
+        // Clean name and topic formatting (remove prefix numbers if they exist)
+        var rawName = row["1.1 ชื่อ สกุลของครูที่นำเสนอ"] || "";
+        var cleanName = rawName.replace(/^\d+/, "").trim(); // Remove leading number e.g. "2นางสาวบัณฑิตา" -> "นางสาวบัณฑิตา"
+        
+        var rawTopic = row["1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)"] || "";
+        var cleanTopic = rawTopic.replace(/^\d+/, "").trim();
+
+        return {
+          timestamp: row["ประทับเวลา"] || "",
+          teacher: cleanName,
+          topic: cleanTopic,
+          level: (row["1.3 ระดับชั้นที่ทำ"] || "").trim(),
+          dept: (row["1.4 กลุ่มสาระที่สอดคล้อง"] || "").trim(),
+          keywords: row["1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้"] || "",
+          score: parseFloat(row[keyScore]) || 0,
+          strengths: row[keyStrengths] || "",
+          future: row[keyFuture] || ""
+        };
+      });
+
+      // Construct unique projects list
+      var tempProjects = {};
+      allData.forEach(function(item) {
+        var key = item.topic;
+        if (!tempProjects[key]) {
+          tempProjects[key] = {
+            teacher: item.teacher,
+            topic: item.topic,
+            dept: item.dept,
+            level: item.level,
+            keywords: [],
+            scores: [],
+            strengths: [],
+            future: []
+          };
+        }
+        
+        if (item.keywords && !tempProjects[key].keywords.includes(item.keywords)) {
+          tempProjects[key].keywords.push(item.keywords);
+        }
+        if (item.score) {
+          tempProjects[key].scores.push(item.score);
+        }
+        if (item.strengths && item.strengths.trim()) {
+          tempProjects[key].strengths.push({
+            text: item.strengths.trim(),
+            timestamp: item.timestamp
+          });
+        }
+        if (item.future && item.future.trim()) {
+          tempProjects[key].future.push({
+            text: item.future.trim(),
+            timestamp: item.timestamp
+          });
+        }
+      });
+
+      projectsList = Object.keys(tempProjects).map(function(key) {
+        var p = tempProjects[key];
+        var avg = p.scores.length > 0 ? (p.scores.reduce((a, b) => a + b, 0) / p.scores.length) : 0;
+        return {
+          teacher: p.teacher,
+          topic: p.topic,
+          dept: p.dept,
+          level: p.level,
+          keywords: p.keywords.join(", "),
+          avgScore: parseFloat(avg.toFixed(2)),
+          strengths: p.strengths,
+          future: p.future
+        };
+      });
+
+      filteredData = [...projectsList];
+
+      // Update KPI indicators
+      updateKPIs();
+
+      // Populate Filter Dropdowns
+      populateDropdowns();
+
+      // Draw Charts
+      drawCharts();
+
+      // Render Table Rows
+      renderTable();
+
+      // Hide Loader
+      document.getElementById("loader").style.display = "none";
+    }
+
+    // Populate dropdown elements dynamically
+    function populateDropdowns() {
+      var depts = [...new Set(projectsList.map(p => p.dept))].filter(Boolean).sort();
+      var levels = [...new Set(projectsList.map(p => p.level))].filter(Boolean).sort();
+
+      var deptSelect = document.getElementById("filterDept");
+      var levelSelect = document.getElementById("filterLevel");
+
+      deptSelect.innerHTML = '<option value="">-- ทุกกลุ่มสาระ/ฝ่าย --</option>';
+      levelSelect.innerHTML = '<option value="">-- ทุกระดับชั้น --</option>';
+
+      depts.forEach(function(d) {
+        var opt = document.createElement("option");
+        opt.value = d;
+        opt.innerText = d;
+        deptSelect.appendChild(opt);
+      });
+
+      levels.forEach(function(l) {
+        var opt = document.createElement("option");
+        opt.value = l;
+        opt.innerText = l;
+        levelSelect.appendChild(opt);
+      });
+    }
+
+    // Calculate and populate KPI cards
+    function updateKPIs() {
+      var teachers = [...new Set(projectsList.map(p => p.teacher))].length;
+      document.getElementById("kpiTeachers").innerText = teachers + " ท่าน";
+      document.getElementById("kpiFeedbacks").innerText = allData.length + " รายการ";
+
+      var totalScores = allData.map(d => d.score).filter(Boolean);
+      var overallAvg = totalScores.length > 0 ? (totalScores.reduce((a, b) => a + b, 0) / totalScores.length) : 0;
+      document.getElementById("kpiAvgScore").innerText = overallAvg.toFixed(2) + " / 5.00";
+
+      var deptsCount = [...new Set(allData.map(d => d.dept))].filter(Boolean).length;
+      document.getElementById("kpiDepts").innerText = deptsCount + " กลุ่ม/งาน";
+    }
+
+    // Main Draw Charts function
+    function drawCharts() {
+      if (deptChartInstance) deptChartInstance.destroy();
+      if (levelChartInstance) levelChartInstance.destroy();
+      if (scoreChartInstance) scoreChartInstance.destroy();
+
+      // Data 1: Learning Area distribution (Pie Chart of feedback counts)
+      var deptCounts = {};
+      allData.forEach(d => {
+        if (d.dept) deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1;
+      });
+      var deptLabels = Object.keys(deptCounts);
+      var deptValues = Object.values(deptCounts);
+
+      var ctxDept = document.getElementById('chartDept').getContext('2d');
+      deptChartInstance = new Chart(ctxDept, {
+        type: 'doughnut',
+        data: {
+          labels: deptLabels,
+          datasets: [{
+            data: deptValues,
+            backgroundColor: [
+              '#0D3A6C', '#1E40AF', '#2A6F97', '#457B9D', '#A9D6E5',
+              '#2ECC71', '#F1C40F', '#E67E22', '#9B59B6', '#34495E',
+              '#1ABC9C', '#E74C3C', '#BDC3C7', '#3498DB', '#95A5A6'
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                font: { family: 'Sarabun', size: 11 },
+                boxWidth: 12
+              }
+            }
+          }
+        }
+      });
+
+      // Data 2: Grade level distribution (Bar Chart of unique project count)
+      var levelCounts = {};
+      projectsList.forEach(p => {
+        if (p.level) levelCounts[p.level] = (levelCounts[p.level] || 0) + 1;
+      });
+      var levelLabels = Object.keys(levelCounts).sort();
+      var levelValues = levelLabels.map(l => levelCounts[l]);
+
+      var ctxLevel = document.getElementById('chartLevel').getContext('2d');
+      levelChartInstance = new Chart(ctxLevel, {
+        type: 'bar',
+        data: {
+          labels: levelLabels,
+          datasets: [{
+            label: 'จำนวนโครงการวิจัย (เรื่อง)',
+            data: levelValues,
+            backgroundColor: 'rgba(42, 111, 151, 0.85)',
+            borderColor: 'var(--color-secondary)',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, font: { family: 'Outfit' } },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            },
+            x: {
+              ticks: { font: { family: 'Sarabun', size: 12 } },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+
+      // Data 3: Average Score by Learning Area
+      var deptScores = {};
+      allData.forEach(d => {
+        if (d.dept && d.score) {
+          if (!deptScores[d.dept]) deptScores[d.dept] = [];
+          deptScores[d.dept].push(d.score);
+        }
+      });
+      var scoreDeptLabels = Object.keys(deptScores);
+      var scoreDeptValues = scoreDeptLabels.map(dept => {
+        var scores = deptScores[dept];
+        var avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        return parseFloat(avg.toFixed(2));
+      });
+
+      var scoreDeptZip = scoreDeptLabels.map((lbl, idx) => ({ label: lbl, val: scoreDeptValues[idx] }));
+      scoreDeptZip.sort((a, b) => b.val - a.val);
+      var sortedLabels = scoreDeptZip.map(z => z.label);
+      var sortedValues = scoreDeptZip.map(z => z.val);
+
+      var ctxScoreDept = document.getElementById('chartScoreDept').getContext('2d');
+      scoreChartInstance = new Chart(ctxScoreDept, {
+        type: 'bar',
+        data: {
+          labels: sortedLabels,
+          datasets: [{
+            label: 'คะแนนเฉลี่ย',
+            data: sortedValues,
+            backgroundColor: 'rgba(13, 58, 108, 0.85)',
+            borderColor: 'var(--color-primary)',
+            borderWidth: 1,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              min: 3.5,
+              max: 5.0,
+              ticks: { font: { family: 'Outfit' } },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            },
+            x: {
+              ticks: { 
+                font: { family: 'Sarabun', size: 11 },
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    // Render Table Rows based on filters
+    function renderTable() {
+      var tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+
+      if (filteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--color-text-muted); padding: 30px;">ไม่พบข้อมูลงานวิจัยตามเงื่อนไขที่เลือก</td></tr>';
+        return;
+      }
+
+      filteredData.forEach(function(item, index) {
+        var tr = document.createElement("tr");
+
+        var scoreClass = "high";
+        if (item.avgScore < 4.5) {
+          scoreClass = "mid";
+        }
+
+        tr.innerHTML = `
+          <td style="font-weight: 500;">${item.teacher}</td>
+          <td>
+            <div style="font-weight: 500; color: var(--color-primary);">${item.topic}</div>
+            <div style="font-size: 12px; color: var(--color-text-muted); margin-top: 4px;">คำสำคัญ: ${item.keywords || '-'}</div>
+          </td>
+          <td><span class="meta-info-badge" style="color: var(--color-primary); background: var(--color-primary-light); border: none; font-size: 11px; font-weight: 600; display: inline-flex; border-radius: 6px;">${item.dept}</span></td>
+          <td><strong style="color: var(--color-secondary);">${item.level}</strong></td>
+          <td>
+            <span class="score-badge ${scoreClass}">
+              <i class="fa-solid fa-star"></i> ${item.avgScore.toFixed(2)}
+            </span>
+          </td>
+          <td style="text-align: center;">
+            <button class="btn-action" onclick="openDetails(${index})">
+              <i class="fa-solid fa-circle-info"></i> รายละเอียด
+            </button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Filter application logic
+    function applyFilters() {
+      var query = document.getElementById("searchInput").value.toLowerCase();
+      var deptFilter = document.getElementById("filterDept").value;
+      var levelFilter = document.getElementById("filterLevel").value;
+
+      filteredData = projectsList.filter(function(item) {
+        var matchQuery = !query || 
+                         item.teacher.toLowerCase().includes(query) || 
+                         item.topic.toLowerCase().includes(query) || 
+                         item.keywords.toLowerCase().includes(query);
+                         
+        var matchDept = !deptFilter || item.dept === deptFilter;
+        var matchLevel = !levelFilter || item.level === levelFilter;
+
+        return matchQuery && matchDept && matchLevel;
+      });
+
+      renderTable();
+    }
+
+    // Reset all filter controls
+    function resetFilters() {
+      document.getElementById("searchInput").value = "";
+      document.getElementById("filterDept").value = "";
+      document.getElementById("filterLevel").value = "";
+      filteredData = [...projectsList];
+      renderTable();
+    }
+
+    // Switch Tabs Navigation
+    function switchTab(evt, tabId) {
+      var tabContents = document.getElementsByClassName("tab-content");
+      for (var i = 0; i < tabContents.length; i++) {
+        tabContents[i].classList.remove("active");
+      }
+
+      var tabButtons = document.getElementsByClassName("tab-btn");
+      for (var i = 0; i < tabButtons.length; i++) {
+        tabButtons[i].classList.remove("active");
+      }
+
+      document.getElementById(tabId).classList.add("active");
+      evt.currentTarget.classList.add("active");
+
+      if (tabId === 'tab-dashboard') {
+        drawCharts();
+      }
+    }
+
+    // Open detail popup modal
+    function openDetails(index) {
+      var item = filteredData[index];
+      
+      document.getElementById("modalTeacher").innerText = "ผู้นำเสนอ: " + item.teacher;
+      document.getElementById("modalTopic").innerText = item.topic;
+      document.getElementById("modalDept").innerText = item.dept;
+      document.getElementById("modalLevel").innerText = item.level;
+      document.getElementById("modalScore").innerHTML = '<i class="fa-solid fa-star" style="color: var(--color-warning);"></i> ' + item.avgScore.toFixed(2) + " / 5.00";
+      document.getElementById("modalKeywords").innerText = item.keywords || "ไม่มีคำสำคัญระบุ";
+
+      var strengthsDiv = document.getElementById("modalStrengths");
+      strengthsDiv.innerHTML = "";
+      if (item.strengths.length === 0) {
+        strengthsDiv.innerHTML = '<div style="color: var(--color-text-muted); font-style: italic;">ไม่มีความคิดเห็นเกี่ยวกับจุดเด่นระบุไว้</div>';
+      } else {
+        item.strengths.forEach(function(s) {
+          var itemDiv = document.createElement("div");
+          itemDiv.className = "feedback-item";
+          itemDiv.innerHTML = `
+            <div class="feedback-meta"><span><i class="fa-solid fa-user-pen"></i> ความคิดเห็นจากเพื่อนครู</span> <span>${s.timestamp}</span></div>
+            <div style="font-weight: 500;">${s.text}</div>
+          `;
+          strengthsDiv.appendChild(itemDiv);
+        });
+      }
+
+      var futureDiv = document.getElementById("modalFuture");
+      futureDiv.innerHTML = "";
+      if (item.future.length === 0) {
+        futureDiv.innerHTML = '<div style="color: var(--color-text-muted); font-style: italic;">ไม่มีความคิดเห็นเกี่ยวกับการต่อยอดระบุไว้</div>';
+      } else {
+        item.future.forEach(function(f) {
+          var itemDiv = document.createElement("div");
+          itemDiv.className = "feedback-item";
+          itemDiv.innerHTML = `
+            <div class="feedback-meta"><span><i class="fa-solid fa-lightbulb"></i> ข้อเสนอแนะต่อยอด (Feedforward)</span> <span>${f.timestamp}</span></div>
+            <div style="font-weight: 500;">${f.text}</div>
+          `;
+          futureDiv.appendChild(itemDiv);
+        });
+      }
+
+      document.getElementById("detailModal").style.display = "flex";
+    }
+
+    // Close detail popup modal
+    function closeModal(evt) {
+      document.getElementById("detailModal").style.display = "none";
+    }
+
+    function showError(msg) {
+      document.getElementById("errorMessage").innerText = msg;
+      document.getElementById("errorAlert").style.display = "flex";
+      document.getElementById("loader").style.display = "none";
+    }
+  </script>
+</body>
+</html>
