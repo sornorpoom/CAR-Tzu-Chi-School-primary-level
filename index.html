@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -238,14 +238,31 @@
     .panel-col-6 { grid-column: span 6; }
     .panel-col-12 { grid-column: span 12; }
 
-    @media (max-width: 1024px) {
-      .panel-col-6 { grid-column: span 12; }
-    }
-
     .chart-container {
       position: relative;
-      height: 300px;
+      height: 320px;
       width: 100%;
+    }
+
+    .tall-chart {
+      height: 380px;
+    }
+
+    /* Responsive Layout Styles */
+    @media (max-width: 1250px) {
+      .panel-col-6 { grid-column: span 12; }
+      .dashboard-grid { gap: 20px; }
+      .panel { padding: 20px; }
+    }
+
+    @media (max-width: 768px) {
+      .app-container { padding: 12px; }
+      .panel { padding: 14px; }
+      .dashboard-grid { gap: 16px; }
+      .chart-container { height: 260px; }
+      .tall-chart { height: 300px; }
+      .panel-header { margin-bottom: 12px; padding-bottom: 8px; }
+      .panel-title { font-size: 14px; gap: 6px; }
     }
 
     /* Tab Controls */
@@ -780,6 +797,7 @@
         </div>
       </div>
 
+
       <div class="kpi-card warning">
         <div class="kpi-icon"><i class="fa-solid fa-layer-group"></i></div>
         <div class="kpi-data">
@@ -806,25 +824,12 @@
     <!-- TAB 1: Dashboard ภาพรวม -->
     <div id="tab-dashboard" class="tab-content active">
       <div class="dashboard-grid">
-        <!-- Chart 1: Learning Area Distribution -->
+        <!-- Chart 1: Research Count by Grade Level -->
         <div class="panel panel-col-6">
           <div class="panel-header">
             <div class="panel-title">
-              <i class="fa-solid fa-chart-pie" style="color: var(--color-primary);"></i>
-              <span id="titleDept">สัดส่วนความคิดเห็นแบ่งตามกลุ่มสาระ/งานสนับสนุน</span>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas id="chartDept"></canvas>
-          </div>
-        </div>
-
-        <!-- Chart 2: Grade Level Distribution -->
-        <div class="panel panel-col-6">
-          <div class="panel-header">
-            <div class="panel-title">
-              <i class="fa-solid fa-chart-bar" style="color: var(--color-secondary);"></i>
-              <span id="titleLevel">จำนวนโครงการวิจัยจำแนกตามระดับชั้น</span>
+              <i class="fa-solid fa-graduation-cap" style="color: var(--color-secondary);"></i>
+              <span>จำนวนโครงการวิจัยจำแนกตามระดับชั้น</span>
             </div>
           </div>
           <div class="chart-container">
@@ -832,23 +837,64 @@
           </div>
         </div>
 
-        <!-- Chart 3: Innovation Effectiveness by Learning Area -->
+        <!-- Chart 2: Research Count by Department -->
+        <div class="panel panel-col-6">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-cubes" style="color: var(--color-primary);"></i>
+              <span>จำนวนโครงการวิจัยจำแนกตามกลุ่มสาระที่เกี่ยวข้อง</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartDept"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 3: Innovation Effectiveness by Department -->
         <div class="panel panel-col-12">
           <div class="panel-header">
             <div class="panel-title">
               <i class="fa-solid fa-star" style="color: var(--color-warning);"></i>
-              <span id="titleScoreDept">ค่าเฉลี่ยคะแนนประสิทธิผลของนวัตกรรมจำแนกตามกลุ่มสาระ (เต็ม 5 คะแนน)</span>
+              <span>ค่าเฉลี่ยคะแนนประสิทธิผลของนวัตกรรมจำแนกตามกลุ่มสาระ (เต็ม 5 คะแนน)</span>
             </div>
           </div>
-          <div class="chart-container" style="height: 350px;">
+          <div class="chart-container tall-chart">
             <canvas id="chartScoreDept"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 4: Feedback Count by Presenter (Top 10) -->
+        <div class="panel panel-col-6">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-comments" style="color: var(--color-secondary);"></i>
+              <span>จำนวนความคิดเห็นสะท้อนคิดจำแนกตามผู้เสนอ (10 อันดับแรก)</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartFeedbackPresenter"></canvas>
+          </div>
+        </div>
+
+        <!-- Chart 5: Individual Average Score (Top 10) -->
+        <div class="panel panel-col-6">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-trophy" style="color: var(--color-warning);"></i>
+              <span>คะแนนเฉลี่ยผลสัมฤทธิ์นวัตกรรมรายบุคคล (10 อันดับแรก)</span>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartScoreIndividual"></canvas>
           </div>
         </div>
       </div>
     </div>
 
     <!-- TAB 2: รายละเอียดงานวิจัยรายบุคคล -->
-    <div id="tab-details" class="tab-content">
+
+
+<div id="tab-details" class="tab-content">
       <div class="panel panel-col-12">
         <div class="panel-header">
           <div class="panel-title">
@@ -1178,9 +1224,11 @@
     var allData = [];
     var filteredData = [];
     var projectsList = [];
-    var deptChartInstance = null;
     var levelChartInstance = null;
-    var scoreChartInstance = null;
+    var deptChartInstance = null;
+    var scoreDeptChartInstance = null;
+    var feedbackPresenterChartInstance = null;
+    var scoreIndividualChartInstance = null;
 
     // Initialize Page
     document.addEventListener("DOMContentLoaded", function() {
@@ -1226,17 +1274,6 @@
       
       // Show loader
       document.getElementById("loader").style.display = "flex";
-      
-      // Set page titles dynamically
-      if (level === 'primary') {
-        document.getElementById("titleDept").innerText = "สัดส่วนความคิดเห็นแบ่งตามกลุ่มสาระ/งานสนับสนุน";
-        document.getElementById("titleLevel").innerText = "จำนวนโครงการวิจัยจำแนกตามระดับชั้น";
-        document.getElementById("titleScoreDept").innerText = "ค่าเฉลี่ยคะแนนประสิทธิผลของนวัตกรรมจำแนกตามกลุ่มสาระ (เต็ม 5 คะแนน)";
-      } else {
-        document.getElementById("titleDept").innerText = "สัดส่วนบทบาทของผู้วิพากษ์";
-        document.getElementById("titleLevel").innerText = "จำนวนความคิดเห็นสะท้อนคิดจำแนกตามผู้เสนอ (10 อันดับแรก)";
-        document.getElementById("titleScoreDept").innerText = "คะแนนเฉลี่ยผลสัมฤทธิ์นวัตกรรมรายบุคคล (15 อันดับแรก)";
-      }
       
       // Load corresponding data
       var dataToLoad = [];
@@ -2310,6 +2347,40 @@
 
     // Process & Normalize incoming raw data
     function initDashboardData(rawData) {
+      // Secondary fallback mappings for grade level and department
+      var secondaryMappings = {
+        "01": { level: "ม.1", dept: "สุขศึกษาและพลศึกษา" },
+        "02": { level: "ม.2", dept: "คณิตศาสตร์" },
+        "03": { level: "ม.3", dept: "สุขศึกษาและพลศึกษา" },
+        "04": { level: "ม.4", dept: "ภาษาไทย" },
+        "05": { level: "ม.5", dept: "วิทยาศาสตร์และเทคโนโลยี" },
+        "06": { level: "ม.6", dept: "วิทยาศาสตร์และเทคโนโลยี" },
+        "08": { level: "ม.1", dept: "กิจกรรมพัฒนาผู้เรียน" },
+        "09": { level: "ม.2", dept: "วิทยาศาสตร์และเทคโนโลยี" },
+        "10": { level: "ม.3", dept: "สังคมศึกษา ศาสนา และวัฒนธรรม" },
+        "11": { level: "ม.4", dept: "การงานอาชีพ" },
+        "12": { level: "ม.5", dept: "คณิตศาสตร์" },
+        "13": { level: "ม.6", dept: "ภาษาต่างประเทศ" },
+        "14": { level: "ม.1", dept: "ภาษาไทย" },
+        "15": { level: "ม.2", dept: "ภาษาไทย" },
+        "16": { level: "ม.3", dept: "สังคมศึกษา ศาสนา และวัฒนธรรม" },
+        "17": { level: "ม.4", dept: "คณิตศาสตร์" },
+        "19": { level: "ม.5", dept: "ภาษาต่างประเทศ" },
+        "20": { level: "ม.6", dept: "สังคมศึกษา ศาสนา และวัฒนธรรม" },
+        "21": { level: "ม.1", dept: "วิทยาศาสตร์และเทคโนโลยี" },
+        "22": { level: "ม.2", dept: "การงานอาชีพ" },
+        "23": { level: "ม.3", dept: "ภาษาไทย" },
+        "24": { level: "ม.4", dept: "สุขศึกษาและพลศึกษา" },
+        "25": { level: "ม.5", dept: "ศิลปะ" },
+        "26": { level: "ม.6", dept: "ศิลปะ" },
+        "27": { level: "ม.1", dept: "ภาษาต่างประเทศ" },
+        "29": { level: "ม.2", dept: "คณิตศาสตร์" },
+        "30": { level: "ม.3", dept: "กิจกรรมพัฒนาผู้เรียน" },
+        "31": { level: "ม.4", dept: "กิจกรรมพัฒนาผู้เรียน" },
+        "32": { level: "ม.5", dept: "กิจกรรมพัฒนาผู้เรียน" },
+        "33": { level: "ม.6", dept: "กิจกรรมพัฒนาผู้เรียน" }
+      };
+
       // Filter out rows that are entirely empty or have no presenter/teacher
       var validRows = rawData.filter(function(row) {
         var keyTeacher = Object.keys(row).find(k => k.includes("ชื่อ สกุลของครูที่นำเสนอ") || k.includes("ผู้เสนอ") || k.includes("1.1"));
@@ -2334,12 +2405,13 @@
         var rawTeacherValue = keyTeacher ? (row[keyTeacher] || "") : "";
         var teacher = "";
         var topic = "";
+        var order = "";
 
         if (activeLevel === 'secondary') {
           // Secondary format: "01 | นายอนิวัฒน์ ใจคำ"
           if (rawTeacherValue.includes("|")) {
             var parts = rawTeacherValue.split("|");
-            var order = parts[0].trim();
+            order = parts[0].trim();
             teacher = parts[1].trim();
             topic = "งานวิจัยระดับมัธยมศึกษา (ลำดับที่ " + order + ")";
           } else {
@@ -2359,13 +2431,21 @@
         }
 
         // Get default values if fields are missing
-        var level = keyLevel ? (row[keyLevel] || "").trim() : "";
-        if (!level) {
+        var level = "";
+        if (keyLevel && row[keyLevel] && row[keyLevel].trim()) {
+          level = row[keyLevel].trim();
+        } else if (activeLevel === 'secondary' && order && secondaryMappings[order]) {
+          level = secondaryMappings[order].level;
+        } else {
           level = (activeLevel === 'secondary') ? "มัธยมศึกษา" : "ประถมศึกษา";
         }
 
-        var dept = keyDept ? (row[keyDept] || "").trim() : "";
-        if (!dept) {
+        var dept = "";
+        if (keyDept && row[keyDept] && row[keyDept].trim()) {
+          dept = row[keyDept].trim();
+        } else if (activeLevel === 'secondary' && order && secondaryMappings[order]) {
+          dept = secondaryMappings[order].dept;
+        } else {
           dept = (activeLevel === 'secondary') ? "มัธยมศึกษา" : "ประถมศึกษา";
         }
 
@@ -2517,289 +2597,294 @@
     }
 
     // Main Draw Charts function
+    // Main Draw Charts function
     function drawCharts() {
-      if (deptChartInstance) deptChartInstance.destroy();
+      // Destroy existing chart instances to avoid memory leaks or rendering overlapping charts
       if (levelChartInstance) levelChartInstance.destroy();
-      if (scoreChartInstance) scoreChartInstance.destroy();
+      if (deptChartInstance) deptChartInstance.destroy();
+      if (scoreDeptChartInstance) scoreDeptChartInstance.destroy();
+      if (feedbackPresenterChartInstance) feedbackPresenterChartInstance.destroy();
+      if (scoreIndividualChartInstance) scoreIndividualChartInstance.destroy();
 
-      if (activeLevel === 'primary') {
-        // --- PRIMARY CHARTS ---
-        // Chart 1: Doughnut (Department Feedback Count)
-        var deptCounts = {};
-        allData.forEach(d => {
-          if (d.dept) deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1;
-        });
-        var deptLabels = Object.keys(deptCounts);
-        var deptValues = Object.values(deptCounts);
+      // Define local data label plugin
+      const chartValuePlugin = {
+        id: 'chartValuePlugin',
+        afterDatasetsDraw(chart) {
+          const { ctx } = chart;
+          ctx.save();
+          chart.data.datasets.forEach((dataset, i) => {
+            const meta = chart.getDatasetMeta(i);
+            meta.data.forEach((bar, index) => {
+              const dataVal = dataset.data[index];
+              if (dataVal === undefined || dataVal === null) return;
+              const label = Number.isInteger(dataVal) ? dataVal.toString() : dataVal.toFixed(2);
+              ctx.fillStyle = '#2C3E50';
+              ctx.font = 'bold 11px Sarabun, sans-serif';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              const x = bar.x;
+              const y = bar.y - 5;
+              ctx.fillText(label, x, y);
+            });
+          });
+          ctx.restore();
+        }
+      };
 
-        var ctxDept = document.getElementById('chartDept').getContext('2d');
-        deptChartInstance = new Chart(ctxDept, {
-          type: 'doughnut',
-          data: {
-            labels: deptLabels,
-            datasets: [{
-              data: deptValues,
-              backgroundColor: [
-                '#0D3A6C', '#1E40AF', '#2A6F97', '#457B9D', '#A9D6E5',
-                '#2ECC71', '#F1C40F', '#E67E22', '#9B59B6', '#34495E',
-                '#1ABC9C', '#E74C3C', '#BDC3C7', '#3498DB', '#95A5A6'
-              ],
-              borderWidth: 2,
-              borderColor: '#ffffff'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'right',
-                labels: {
-                  font: { family: 'Sarabun', size: 11 },
-                  boxWidth: 12
-                }
-              }
-            }
-          }
-        });
+      // --- 1. Chart Level (grade level project count) ---
+      var levelCounts = {};
+      projectsList.forEach(p => {
+        if (p.level) levelCounts[p.level] = (levelCounts[p.level] || 0) + 1;
+      });
+      var levelLabels = Object.keys(levelCounts).sort();
+      var levelValues = levelLabels.map(l => levelCounts[l]);
 
-        // Chart 2: Bar Chart (Research Count by Grade Level)
-        var levelCounts = {};
-        projectsList.forEach(p => {
-          if (p.level) levelCounts[p.level] = (levelCounts[p.level] || 0) + 1;
-        });
-        var levelLabels = Object.keys(levelCounts).sort();
-        var levelValues = levelLabels.map(l => levelCounts[l]);
-
-        var ctxLevel = document.getElementById('chartLevel').getContext('2d');
-        levelChartInstance = new Chart(ctxLevel, {
-          type: 'bar',
-          data: {
-            labels: levelLabels,
-            datasets: [{
-              label: 'จำนวนโครงการวิจัย (เรื่อง)',
-              data: levelValues,
-              backgroundColor: 'rgba(42, 111, 151, 0.85)',
-              borderColor: 'var(--color-secondary)',
-              borderWidth: 1.5,
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
+      var ctxLevel = document.getElementById('chartLevel').getContext('2d');
+      var maxLevelVal = levelValues.length > 0 ? Math.max(...levelValues) : 10;
+      levelChartInstance = new Chart(ctxLevel, {
+        type: 'bar',
+        plugins: [chartValuePlugin],
+        data: {
+          labels: levelLabels,
+          datasets: [{
+            label: 'จำนวนโครงการวิจัย (เรื่อง)',
+            data: levelValues,
+            backgroundColor: 'rgba(42, 111, 151, 0.85)',
+            borderColor: '#2A6F97',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              suggestedMax: maxLevelVal + Math.ceil(maxLevelVal * 0.15) + 1,
+              ticks: { stepSize: 1, font: { family: 'Outfit' } },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { stepSize: 1, font: { family: 'Outfit' } },
-                grid: { color: 'rgba(0, 0, 0, 0.05)' }
-              },
-              x: {
-                ticks: { font: { family: 'Sarabun', size: 12 } },
-                grid: { display: false }
-              }
+            x: {
+              ticks: { font: { family: 'Sarabun', size: 12 } },
+              grid: { display: false }
             }
           }
-        });
+        }
+      });
 
-        // Chart 3: Bar Chart (Average Score by Department)
-        var deptScores = {};
-        allData.forEach(d => {
-          if (d.dept && d.score) {
-            if (!deptScores[d.dept]) deptScores[d.dept] = [];
-            deptScores[d.dept].push(d.score);
-          }
-        });
-        var scoreDeptLabels = Object.keys(deptScores);
-        var scoreDeptValues = scoreDeptLabels.map(dept => {
-          var scores = deptScores[dept];
-          var avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-          return parseFloat(avg.toFixed(2));
-        });
+      // --- 2. Chart Dept (department project count) ---
+      var deptCounts = {};
+      projectsList.forEach(p => {
+        if (p.dept) deptCounts[p.dept] = (deptCounts[p.dept] || 0) + 1;
+      });
+      var deptLabels = Object.keys(deptCounts);
+      var deptValues = Object.values(deptCounts);
+      var deptZip = deptLabels.map((lbl, idx) => ({ label: lbl, val: deptValues[idx] }));
+      deptZip.sort((a, b) => b.val - a.val);
+      var sortedDeptLabels = deptZip.map(z => z.label);
+      var sortedDeptValues = deptZip.map(z => z.val);
 
-        var scoreDeptZip = scoreDeptLabels.map((lbl, idx) => ({ label: lbl, val: scoreDeptValues[idx] }));
-        scoreDeptZip.sort((a, b) => b.val - a.val);
-        var sortedLabels = scoreDeptZip.map(z => z.label);
-        var sortedValues = scoreDeptZip.map(z => z.val);
-
-        var ctxScoreDept = document.getElementById('chartScoreDept').getContext('2d');
-        scoreChartInstance = new Chart(ctxScoreDept, {
-          type: 'bar',
-          data: {
-            labels: sortedLabels,
-            datasets: [{
-              label: 'คะแนนเฉลี่ย',
-              data: sortedValues,
-              backgroundColor: 'rgba(13, 58, 108, 0.85)',
-              borderColor: 'var(--color-primary)',
-              borderWidth: 1,
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
+      var ctxDept = document.getElementById('chartDept').getContext('2d');
+      var maxDeptVal = sortedDeptValues.length > 0 ? Math.max(...sortedDeptValues) : 10;
+      deptChartInstance = new Chart(ctxDept, {
+        type: 'bar',
+        plugins: [chartValuePlugin],
+        data: {
+          labels: sortedDeptLabels,
+          datasets: [{
+            label: 'จำนวนโครงการวิจัย (เรื่อง)',
+            data: sortedDeptValues,
+            backgroundColor: 'rgba(13, 58, 108, 0.85)',
+            borderColor: '#0D3A6C',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              suggestedMax: maxDeptVal + Math.ceil(maxDeptVal * 0.15) + 1,
+              ticks: { stepSize: 1, font: { family: 'Outfit' } },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
             },
-            scales: {
-              y: {
-                min: 3.5,
-                max: 5.0,
-                ticks: { font: { family: 'Outfit' } },
-                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            x: {
+              ticks: { 
+                font: { family: 'Sarabun', size: 11 },
+                maxRotation: 45,
+                minRotation: 45
               },
-              x: {
-                ticks: { 
-                  font: { family: 'Sarabun', size: 11 },
-                  maxRotation: 45,
-                  minRotation: 45
-                },
-                grid: { display: false }
-              }
+              grid: { display: false }
             }
           }
-        });
-      } else {
-        // --- SECONDARY CHARTS ---
-        // Chart 1: Doughnut (Evaluator Roles distribution)
-        var roleCounts = {};
-        allData.forEach(d => {
-          if (d.evalPos) roleCounts[d.evalPos] = (roleCounts[d.evalPos] || 0) + 1;
-        });
-        var roleLabels = Object.keys(roleCounts);
-        var roleValues = Object.values(roleCounts);
+        }
+      });
 
-        var ctxDept = document.getElementById('chartDept').getContext('2d');
-        deptChartInstance = new Chart(ctxDept, {
-          type: 'doughnut',
-          data: {
-            labels: roleLabels,
-            datasets: [{
-              data: roleValues,
-              backgroundColor: [
-                '#0D3A6C', '#1E40AF', '#2A6F97', '#457B9D', '#A9D6E5',
-                '#2ECC71', '#F1C40F', '#E67E22', '#9B59B6', '#34495E'
-              ],
-              borderWidth: 2,
-              borderColor: '#ffffff'
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'right',
-                labels: {
-                  font: { family: 'Sarabun', size: 11 },
-                  boxWidth: 12
-                }
-              }
-            }
-          }
-        });
+      // --- 3. Chart Score Dept (average score by department) ---
+      var deptScores = {};
+      allData.forEach(d => {
+        if (d.dept && d.score) {
+          if (!deptScores[d.dept]) deptScores[d.dept] = [];
+          deptScores[d.dept].push(d.score);
+        }
+      });
+      var scoreDeptLabels = Object.keys(deptScores);
+      var scoreDeptValues = scoreDeptLabels.map(dept => {
+        var scores = deptScores[dept];
+        var avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        return parseFloat(avg.toFixed(2));
+      });
+      var scoreDeptZip = scoreDeptLabels.map((lbl, idx) => ({ label: lbl, val: scoreDeptValues[idx] }));
+      scoreDeptZip.sort((a, b) => b.val - a.val);
+      var sortedScoreDeptLabels = scoreDeptZip.map(z => z.label);
+      var sortedScoreDeptValues = scoreDeptZip.map(z => z.val);
 
-        // Chart 2: Bar Chart (Feedback Count by Presenter - Top 10)
-        var presenterCounts = {};
-        allData.forEach(d => {
-          if (d.teacher) presenterCounts[d.teacher] = (presenterCounts[d.teacher] || 0) + 1;
-        });
-        var presenterLabels = Object.keys(presenterCounts);
-        var presenterValues = Object.values(presenterCounts);
-        
-        var presenterZip = presenterLabels.map((lbl, idx) => ({ label: lbl, val: presenterValues[idx] }));
-        presenterZip.sort((a, b) => b.val - a.val);
-        var top10Zip = presenterZip.slice(0, 10);
-        var top10Labels = top10Zip.map(z => z.label);
-        var top10Values = top10Zip.map(z => z.val);
-
-        var ctxLevel = document.getElementById('chartLevel').getContext('2d');
-        levelChartInstance = new Chart(ctxLevel, {
-          type: 'bar',
-          data: {
-            labels: top10Labels,
-            datasets: [{
-              label: 'จำนวนความคิดเห็น (รายการ)',
-              data: top10Values,
-              backgroundColor: 'rgba(42, 111, 151, 0.85)',
-              borderColor: 'var(--color-secondary)',
-              borderWidth: 1.5,
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
+      var ctxScoreDept = document.getElementById('chartScoreDept').getContext('2d');
+      var minScoreVal = sortedScoreDeptValues.length > 0 ? Math.min(...sortedScoreDeptValues) : 5.0;
+      var yMin = minScoreVal < 3.0 ? 0 : 3.0;
+      scoreDeptChartInstance = new Chart(ctxScoreDept, {
+        type: 'bar',
+        plugins: [chartValuePlugin],
+        data: {
+          labels: sortedScoreDeptLabels,
+          datasets: [{
+            label: 'คะแนนเฉลี่ย',
+            data: sortedScoreDeptValues,
+            backgroundColor: 'rgba(46, 204, 113, 0.85)',
+            borderColor: '#2ECC71',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              min: yMin,
+              max: 5.0,
+              ticks: { font: { family: 'Outfit' } },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
             },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { stepSize: 2, font: { family: 'Outfit' } },
-                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            x: {
+              ticks: { 
+                font: { family: 'Sarabun', size: 11 },
+                maxRotation: 45,
+                minRotation: 45
               },
-              x: {
-                ticks: { font: { family: 'Sarabun', size: 11 } },
-                grid: { display: false }
-              }
+              grid: { display: false }
             }
           }
-        });
+        }
+      });
 
-        // Chart 3: Bar Chart (Individual Average Score - Top 15)
-        var presenterScores = projectsList.map(p => ({ label: p.teacher, val: p.avgScore }));
-        presenterScores.sort((a, b) => b.val - a.val);
-        var top15Scores = presenterScores.slice(0, 15);
-        var top15Labels = top15Scores.map(z => z.label);
-        var top15Values = top15Scores.map(z => z.val);
+      // --- 4. Chart Feedback Presenter (feedback count by presenter - top 10) ---
+      var presenterCounts = {};
+      allData.forEach(d => {
+        if (d.teacher) presenterCounts[d.teacher] = (presenterCounts[d.teacher] || 0) + 1;
+      });
+      var presenterLabels = Object.keys(presenterCounts);
+      var presenterValues = Object.values(presenterCounts);
+      var presenterZip = presenterLabels.map((lbl, idx) => ({ label: lbl, val: presenterValues[idx] }));
+      presenterZip.sort((a, b) => b.val - a.val);
+      var top10Feedback = presenterZip.slice(0, 10);
+      var feedbackLabels = top10Feedback.map(z => z.label);
+      var feedbackValues = top10Feedback.map(z => z.val);
 
-        var ctxScoreDept = document.getElementById('chartScoreDept').getContext('2d');
-        scoreChartInstance = new Chart(ctxScoreDept, {
-          type: 'bar',
-          data: {
-            labels: top15Labels,
-            datasets: [{
-              label: 'คะแนนเฉลี่ยสะสม',
-              data: top15Values,
-              backgroundColor: 'rgba(13, 58, 108, 0.85)',
-              borderColor: 'var(--color-primary)',
-              borderWidth: 1,
-              borderRadius: 6
-            }]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
+      var ctxFeedback = document.getElementById('chartFeedbackPresenter').getContext('2d');
+      var maxFeedbackVal = feedbackValues.length > 0 ? Math.max(...feedbackValues) : 10;
+      feedbackPresenterChartInstance = new Chart(ctxFeedback, {
+        type: 'bar',
+        plugins: [chartValuePlugin],
+        data: {
+          labels: feedbackLabels,
+          datasets: [{
+            label: 'จำนวนความคิดเห็นสะท้อนคิด (รายการ)',
+            data: feedbackValues,
+            backgroundColor: 'rgba(42, 111, 151, 0.85)',
+            borderColor: '#2A6F97',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              suggestedMax: maxFeedbackVal + Math.ceil(maxFeedbackVal * 0.15) + 1,
+              ticks: { stepSize: 2, font: { family: 'Outfit' } },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
             },
-            scales: {
-              y: {
-                min: 3.0,
-                max: 5.0,
-                ticks: { stepSize: 0.5, font: { family: 'Outfit' } },
-                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            x: {
+              ticks: { 
+                font: { family: 'Sarabun', size: 11 },
+                maxRotation: 45,
+                minRotation: 45
               },
-              x: {
-                ticks: { 
-                  font: { family: 'Sarabun', size: 10 },
-                  maxRotation: 45,
-                  minRotation: 45
-                },
-                grid: { display: false }
-              }
+              grid: { display: false }
             }
           }
-        });
-      }
+        }
+      });
+
+      // --- 5. Chart Score Individual (individual average score - top 10) ---
+      var presenterScores = projectsList.map(p => ({ label: p.teacher, val: p.avgScore }));
+      presenterScores.sort((a, b) => b.val - a.val);
+      var top10Scores = presenterScores.slice(0, 10);
+      var scoreLabels = top10Scores.map(z => z.label);
+      var scoreValues = top10Scores.map(z => z.val);
+
+      var ctxScoreInd = document.getElementById('chartScoreIndividual').getContext('2d');
+      var minScoreIndVal = scoreValues.length > 0 ? Math.min(...scoreValues) : 5.0;
+      var yMinInd = minScoreIndVal < 3.0 ? 0 : 3.0;
+      scoreIndividualChartInstance = new Chart(ctxScoreInd, {
+        type: 'bar',
+        plugins: [chartValuePlugin],
+        data: {
+          labels: scoreLabels,
+          datasets: [{
+            label: 'คะแนนเฉลี่ยผลสัมฤทธิ์',
+            data: scoreValues,
+            backgroundColor: 'rgba(13, 58, 108, 0.85)',
+            borderColor: '#0D3A6C',
+            borderWidth: 1.5,
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              min: yMinInd,
+              max: 5.0,
+              ticks: { font: { family: 'Outfit' } },
+              grid: { color: 'rgba(0, 0, 0, 0.05)' }
+            },
+            x: {
+              ticks: { 
+                font: { family: 'Sarabun', size: 11 },
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: { display: false }
+            }
+          }
+        }
+      });
     }
 
-    // Render Table Rows based on filters
+
     function renderTable() {
       var tbody = document.getElementById("tableBody");
       tbody.innerHTML = "";
