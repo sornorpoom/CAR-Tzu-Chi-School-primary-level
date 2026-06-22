@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="th">
 <head>
   <meta charset="UTF-8">
@@ -675,6 +675,46 @@
       gap: 12px;
       font-size: 14px;
     }
+
+    /* Level Selector styles */
+    .level-selector-container {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+      background: white;
+      padding: 8px;
+      border-radius: var(--border-radius-md);
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--color-border);
+      width: fit-content;
+    }
+
+    .level-btn {
+      padding: 10px 20px;
+      border: none;
+      background: transparent;
+      font-family: var(--font-family);
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      border-radius: 8px;
+      transition: var(--transition-base);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .level-btn:hover {
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+
+    .level-btn.active {
+      background: var(--color-primary);
+      color: white;
+      box-shadow: 0 4px 12px rgba(13, 58, 108, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -697,6 +737,16 @@
         <i class="fa-solid fa-database"></i> แหล่งข้อมูล: กำลังตรวจสอบ
       </div>
     </header>
+
+    <!-- Level Selector (Submenu) -->
+    <div class="level-selector-container">
+      <button class="level-btn active" id="btn-primary" onclick="switchLevel('primary')">
+        <i class="fa-solid fa-child"></i> ระดับชั้นประถมศึกษา
+      </button>
+      <button class="level-btn" id="btn-secondary" onclick="switchLevel('secondary')">
+        <i class="fa-solid fa-users-rectangle"></i> ระดับชั้นมัธยมศึกษา
+      </button>
+    </div>
 
     <!-- Error message alert -->
     <div id="errorAlert" class="error-container">
@@ -760,7 +810,7 @@
           <div class="panel-header">
             <div class="panel-title">
               <i class="fa-solid fa-chart-pie" style="color: var(--color-primary);"></i>
-              สัดส่วนความคิดเห็นแบ่งตามกลุ่มสาระ/งานสนับสนุน
+              <span id="titleDept">สัดส่วนความคิดเห็นแบ่งตามกลุ่มสาระ/งานสนับสนุน</span>
             </div>
           </div>
           <div class="chart-container">
@@ -773,7 +823,7 @@
           <div class="panel-header">
             <div class="panel-title">
               <i class="fa-solid fa-chart-bar" style="color: var(--color-secondary);"></i>
-              จำนวนโครงการวิจัยจำแนกตามระดับชั้น
+              <span id="titleLevel">จำนวนโครงการวิจัยจำแนกตามระดับชั้น</span>
             </div>
           </div>
           <div class="chart-container">
@@ -786,7 +836,7 @@
           <div class="panel-header">
             <div class="panel-title">
               <i class="fa-solid fa-star" style="color: var(--color-warning);"></i>
-              ค่าเฉลี่ยคะแนนประสิทธิผลของนวัตกรรมจำแนกตามกลุ่มสาระ (เต็ม 5 คะแนน)
+              <span id="titleScoreDept">ค่าเฉลี่ยคะแนนประสิทธิผลของนวัตกรรมจำแนกตามกลุ่มสาระ (เต็ม 5 คะแนน)</span>
             </div>
           </div>
           <div class="chart-container" style="height: 350px;">
@@ -988,6 +1038,8 @@
 
   <script>
     // Global Data Holders
+    var rawDbData = null;
+    var activeLevel = 'primary';
     var allData = [];
     var filteredData = [];
     var projectsList = [];
@@ -1002,7 +1054,8 @@
         google.script.run
           .withSuccessHandler(function(dataString) {
             document.getElementById("sourceBadge").innerHTML = '<i class="fa-solid fa-sheet-plastic"></i> แหล่งข้อมูล: Google Sheets (เรียลไทม์)';
-            initDashboardData(JSON.parse(dataString));
+            rawDbData = JSON.parse(dataString);
+            switchLevel('primary');
           })
           .withFailureHandler(function(err) {
             showError("เกิดข้อผิดพลาดในการโหลดข้อมูล: " + err.message);
@@ -1018,9 +1071,49 @@
 
     // Fallback Mock Data in case Apps Script is not running
     function loadLocalDemoData() {
-      // Simulate API lag
       setTimeout(function() {
-        var mockData = [
+        var primaryMock = getPrimaryMockData();
+        var secondaryMock = (typeof getSecondaryDemoData === 'function') ? JSON.parse(getSecondaryDemoData()) : [];
+        rawDbData = {
+          primary: primaryMock,
+          secondary: secondaryMock
+        };
+        switchLevel('primary');
+      }, 500);
+    }
+
+    function switchLevel(level) {
+      activeLevel = level;
+      
+      // Update toggle buttons active class
+      document.getElementById("btn-primary").classList.toggle("active", level === 'primary');
+      document.getElementById("btn-secondary").classList.toggle("active", level === 'secondary');
+      
+      // Show loader
+      document.getElementById("loader").style.display = "flex";
+      
+      // Set page titles dynamically
+      if (level === 'primary') {
+        document.getElementById("titleDept").innerText = "สัดส่วนความคิดเห็นแบ่งตามกลุ่มสาระ/งานสนับสนุน";
+        document.getElementById("titleLevel").innerText = "จำนวนโครงการวิจัยจำแนกตามระดับชั้น";
+        document.getElementById("titleScoreDept").innerText = "ค่าเฉลี่ยคะแนนประสิทธิผลของนวัตกรรมจำแนกตามกลุ่มสาระ (เต็ม 5 คะแนน)";
+      } else {
+        document.getElementById("titleDept").innerText = "สัดส่วนบทบาทของผู้วิพากษ์";
+        document.getElementById("titleLevel").innerText = "จำนวนความคิดเห็นสะท้อนคิดจำแนกตามผู้เสนอ (10 อันดับแรก)";
+        document.getElementById("titleScoreDept").innerText = "คะแนนเฉลี่ยผลสัมฤทธิ์นวัตกรรมรายบุคคล (15 อันดับแรก)";
+      }
+      
+      // Load corresponding data
+      var dataToLoad = [];
+      if (rawDbData) {
+        dataToLoad = (level === 'primary') ? (rawDbData.primary || []) : (rawDbData.secondary || []);
+      }
+      
+      initDashboardData(dataToLoad);
+    }
+
+    function getPrimaryMockData() {
+      return [
     {
         "ประทับเวลา":  "20/6/2026, 9:04:03",
         "1.1 ชื่อ สกุลของครูที่นำเสนอ":  "2นางสาวบัณฑิตา อินอร",
@@ -2078,36 +2171,90 @@
         "2.3  ประเด็นที่ 3: ไอเดียต่อยอดเพื่อขยายผลวิจัยนี้ในชั้นเรียนของคุณหรือในปี 2569 (Feedforward) ":  "ศึกษาให้เข้าใจและนำไปปรับใช้ในการเรียนการสอนในแต่ละหัวข้อของวิชาตัวเอง"
     }
 ];
-        
-        initDashboardData(mockData);
-      }, 500);
     }
 
     // Process & Normalize incoming raw data
     function initDashboardData(rawData) {
-      allData = rawData.map(function(row) {
-        // Find key names dynamically since they contain spaces
-        var keyScore = Object.keys(row).find(k => k.includes("2.1"));
-        var keyStrengths = Object.keys(row).find(k => k.includes("2.2"));
-        var keyFuture = Object.keys(row).find(k => k.includes("2.3"));
+      // Filter out rows that are entirely empty or have no presenter/teacher
+      var validRows = rawData.filter(function(row) {
+        var keyTeacher = Object.keys(row).find(k => k.includes("ชื่อ สกุลของครูที่นำเสนอ") || k.includes("ผู้เสนอ") || k.includes("1.1"));
+        return keyTeacher && row[keyTeacher] && row[keyTeacher].trim() !== "";
+      });
 
-        // Clean name and topic formatting (remove prefix numbers if they exist)
-        var rawName = row["1.1 ชื่อ สกุลของครูที่นำเสนอ"] || "";
-        var cleanName = rawName.replace(/^\d+/, "").trim(); // Remove leading number e.g. "2นางสาวบัณฑิตา" -> "นางสาวบัณฑิตา"
+      allData = validRows.map(function(row) {
+        // Find key names dynamically since they contain spaces and vary by sheet
+        var keyTeacher = Object.keys(row).find(k => k.includes("ชื่อ สกุลของครูที่นำเสนอ") || k.includes("ผู้เสนอ") || k.includes("1.1"));
+        var keyTopic = Object.keys(row).find(k => k.includes("ชื่องานวิจัย") || k.includes("1.2"));
+        var keyLevel = Object.keys(row).find(k => k.includes("ระดับชั้นที่ทำ") || k.includes("1.3"));
+        var keyDept = Object.keys(row).find(k => k.includes("กลุ่มสาระ") || k.includes("1.4"));
+        var keyKeywords = Object.keys(row).find(k => k.includes("คำสำคัญ") || k.includes("1.5"));
+        var keyScore = Object.keys(row).find(k => k.includes("2.1") || k.includes("คะแนนความตรงจุด") || k.includes("ประเด็นที่ 1"));
+        var keyStrengths = Object.keys(row).find(k => k.includes("2.2") || k.includes("จุดเด่น") || k.includes("ประเด็นที่ 2"));
+        var keyFuture = Object.keys(row).find(k => k.includes("2.3") || k.includes("ข้อเสนอแนะเพื่อการต่อยอด") || k.includes("Feedforward") || k.includes("ประเด็นที่ 3"));
         
-        var rawTopic = row["1.2 ชื่องานวิจัยในชั้นเรียนของครูที่นำเสนอ (เลือกให้ถูกตามข้อ 1)"] || "";
-        var cleanTopic = rawTopic.replace(/^\d+/, "").trim();
+        var keyEvalName = Object.keys(row).find(k => k.includes("ชื่อ-สกุลผู้วิพากษ์") || k.includes("ผู้วิพากษ์"));
+        var keyEvalPos = Object.keys(row).find(k => k.includes("ตำแหน่งผู้วิพากษ์"));
+
+        // Extract teacher name and topic
+        var rawTeacherValue = keyTeacher ? (row[keyTeacher] || "") : "";
+        var teacher = "";
+        var topic = "";
+
+        if (activeLevel === 'secondary') {
+          // Secondary format: "01 | นายอนิวัฒน์ ใจคำ"
+          if (rawTeacherValue.includes("|")) {
+            var parts = rawTeacherValue.split("|");
+            var order = parts[0].trim();
+            teacher = parts[1].trim();
+            topic = "งานวิจัยระดับมัธยมศึกษา (ลำดับที่ " + order + ")";
+          } else {
+            teacher = rawTeacherValue.trim();
+            topic = "งานวิจัยระดับมัธยมศึกษา";
+          }
+        } else {
+          // Primary format: "2นางสาวบัณฑิตา อินอร"
+          teacher = rawTeacherValue.replace(/^\d+/, "").trim();
+          var rawTopicValue = keyTopic ? (row[keyTopic] || "") : "";
+          topic = rawTopicValue.replace(/^\d+/, "").trim();
+        }
+
+        // Overwrite topic if keyTopic actually exists and is present (future-proof for secondary)
+        if (keyTopic && row[keyTopic] && row[keyTopic].trim()) {
+          topic = row[keyTopic].replace(/^\d+/, "").trim();
+        }
+
+        // Get default values if fields are missing
+        var level = keyLevel ? (row[keyLevel] || "").trim() : "";
+        if (!level) {
+          level = (activeLevel === 'secondary') ? "มัธยมศึกษา" : "ประถมศึกษา";
+        }
+
+        var dept = keyDept ? (row[keyDept] || "").trim() : "";
+        if (!dept) {
+          dept = (activeLevel === 'secondary') ? "มัธยมศึกษา" : "ประถมศึกษา";
+        }
+
+        var keywords = keyKeywords ? (row[keyKeywords] || "").trim() : "";
+        var scoreVal = keyScore ? row[keyScore] : "";
+        var score = parseFloat(scoreVal) || 0;
+        var strengths = keyStrengths ? (row[keyStrengths] || "").trim() : "";
+        var future = keyFuture ? (row[keyFuture] || "").trim() : "";
+
+        var evalName = keyEvalName ? (row[keyEvalName] || "").trim() : "";
+        var evalPos = keyEvalPos ? (row[keyEvalPos] || "").trim() : "";
 
         return {
           timestamp: row["ประทับเวลา"] || "",
-          teacher: cleanName,
-          topic: cleanTopic,
-          level: (row["1.3 ระดับชั้นที่ทำ"] || "").trim(),
-          dept: (row["1.4 กลุ่มสาระที่สอดคล้อง"] || "").trim(),
-          keywords: row["1.5 คำสำคัญของงานวิจัยในชั้นเรียนเรื่องนี้"] || "",
-          score: parseFloat(row[keyScore]) || 0,
-          strengths: row[keyStrengths] || "",
-          future: row[keyFuture] || ""
+          teacher: teacher,
+          topic: topic,
+          level: level,
+          dept: dept,
+          keywords: keywords,
+          score: score,
+          strengths: strengths,
+          future: future,
+          evalName: evalName,
+          evalPos: evalPos
         };
       });
 
@@ -2137,13 +2284,17 @@
         if (item.strengths && item.strengths.trim()) {
           tempProjects[key].strengths.push({
             text: item.strengths.trim(),
-            timestamp: item.timestamp
+            timestamp: item.timestamp,
+            evalName: item.evalName,
+            evalPos: item.evalPos
           });
         }
         if (item.future && item.future.trim()) {
           tempProjects[key].future.push({
             text: item.future.trim(),
-            timestamp: item.timestamp
+            timestamp: item.timestamp,
+            evalName: item.evalName,
+            evalPos: item.evalPos
           });
         }
       });
@@ -2217,8 +2368,17 @@
       var overallAvg = totalScores.length > 0 ? (totalScores.reduce((a, b) => a + b, 0) / totalScores.length) : 0;
       document.getElementById("kpiAvgScore").innerText = overallAvg.toFixed(2) + " / 5.00";
 
-      var deptsCount = [...new Set(allData.map(d => d.dept))].filter(Boolean).length;
-      document.getElementById("kpiDepts").innerText = deptsCount + " กลุ่ม/งาน";
+      if (activeLevel === 'secondary') {
+        var evaluators = [...new Set(allData.map(d => d.evalName))].filter(Boolean).length;
+        document.getElementById("kpiDepts").innerText = evaluators + " ท่าน";
+        document.querySelector(".kpi-card.warning h3").innerText = "จำนวนผู้ร่วมวิพากษ์วิจัย";
+        document.querySelector(".kpi-card.warning .kpi-icon").innerHTML = '<i class="fa-solid fa-users"></i>';
+      } else {
+        var deptsCount = [...new Set(allData.map(d => d.dept))].filter(Boolean).length;
+        document.getElementById("kpiDepts").innerText = deptsCount + " กลุ่ม/งาน";
+        document.querySelector(".kpi-card.warning h3").innerText = "กลุ่มสาระและฝ่ายสนับสนุน";
+        document.querySelector(".kpi-card.warning .kpi-icon").innerHTML = '<i class="fa-solid fa-layer-group"></i>';
+      }
     }
 
     // Main Draw Charts function
@@ -2227,145 +2387,281 @@
       if (levelChartInstance) levelChartInstance.destroy();
       if (scoreChartInstance) scoreChartInstance.destroy();
 
-      // Data 1: Learning Area distribution (Pie Chart of feedback counts)
-      var deptCounts = {};
-      allData.forEach(d => {
-        if (d.dept) deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1;
-      });
-      var deptLabels = Object.keys(deptCounts);
-      var deptValues = Object.values(deptCounts);
+      if (activeLevel === 'primary') {
+        // --- PRIMARY CHARTS ---
+        // Chart 1: Doughnut (Department Feedback Count)
+        var deptCounts = {};
+        allData.forEach(d => {
+          if (d.dept) deptCounts[d.dept] = (deptCounts[d.dept] || 0) + 1;
+        });
+        var deptLabels = Object.keys(deptCounts);
+        var deptValues = Object.values(deptCounts);
 
-      var ctxDept = document.getElementById('chartDept').getContext('2d');
-      deptChartInstance = new Chart(ctxDept, {
-        type: 'doughnut',
-        data: {
-          labels: deptLabels,
-          datasets: [{
-            data: deptValues,
-            backgroundColor: [
-              '#0D3A6C', '#1E40AF', '#2A6F97', '#457B9D', '#A9D6E5',
-              '#2ECC71', '#F1C40F', '#E67E22', '#9B59B6', '#34495E',
-              '#1ABC9C', '#E74C3C', '#BDC3C7', '#3498DB', '#95A5A6'
-            ],
-            borderWidth: 2,
-            borderColor: '#ffffff'
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: {
-                font: { family: 'Sarabun', size: 11 },
-                boxWidth: 12
+        var ctxDept = document.getElementById('chartDept').getContext('2d');
+        deptChartInstance = new Chart(ctxDept, {
+          type: 'doughnut',
+          data: {
+            labels: deptLabels,
+            datasets: [{
+              data: deptValues,
+              backgroundColor: [
+                '#0D3A6C', '#1E40AF', '#2A6F97', '#457B9D', '#A9D6E5',
+                '#2ECC71', '#F1C40F', '#E67E22', '#9B59B6', '#34495E',
+                '#1ABC9C', '#E74C3C', '#BDC3C7', '#3498DB', '#95A5A6'
+              ],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: {
+                  font: { family: 'Sarabun', size: 11 },
+                  boxWidth: 12
+                }
               }
             }
           }
-        }
-      });
+        });
 
-      // Data 2: Grade level distribution (Bar Chart of unique project count)
-      var levelCounts = {};
-      projectsList.forEach(p => {
-        if (p.level) levelCounts[p.level] = (levelCounts[p.level] || 0) + 1;
-      });
-      var levelLabels = Object.keys(levelCounts).sort();
-      var levelValues = levelLabels.map(l => levelCounts[l]);
+        // Chart 2: Bar Chart (Research Count by Grade Level)
+        var levelCounts = {};
+        projectsList.forEach(p => {
+          if (p.level) levelCounts[p.level] = (levelCounts[p.level] || 0) + 1;
+        });
+        var levelLabels = Object.keys(levelCounts).sort();
+        var levelValues = levelLabels.map(l => levelCounts[l]);
 
-      var ctxLevel = document.getElementById('chartLevel').getContext('2d');
-      levelChartInstance = new Chart(ctxLevel, {
-        type: 'bar',
-        data: {
-          labels: levelLabels,
-          datasets: [{
-            label: 'จำนวนโครงการวิจัย (เรื่อง)',
-            data: levelValues,
-            backgroundColor: 'rgba(42, 111, 151, 0.85)',
-            borderColor: 'var(--color-secondary)',
-            borderWidth: 1.5,
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
+        var ctxLevel = document.getElementById('chartLevel').getContext('2d');
+        levelChartInstance = new Chart(ctxLevel, {
+          type: 'bar',
+          data: {
+            labels: levelLabels,
+            datasets: [{
+              label: 'จำนวนโครงการวิจัย (เรื่อง)',
+              data: levelValues,
+              backgroundColor: 'rgba(42, 111, 151, 0.85)',
+              borderColor: 'var(--color-secondary)',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }]
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { stepSize: 1, font: { family: 'Outfit' } },
-              grid: { color: 'rgba(0, 0, 0, 0.05)' }
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
             },
-            x: {
-              ticks: { font: { family: 'Sarabun', size: 12 } },
-              grid: { display: false }
-            }
-          }
-        }
-      });
-
-      // Data 3: Average Score by Learning Area
-      var deptScores = {};
-      allData.forEach(d => {
-        if (d.dept && d.score) {
-          if (!deptScores[d.dept]) deptScores[d.dept] = [];
-          deptScores[d.dept].push(d.score);
-        }
-      });
-      var scoreDeptLabels = Object.keys(deptScores);
-      var scoreDeptValues = scoreDeptLabels.map(dept => {
-        var scores = deptScores[dept];
-        var avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-        return parseFloat(avg.toFixed(2));
-      });
-
-      var scoreDeptZip = scoreDeptLabels.map((lbl, idx) => ({ label: lbl, val: scoreDeptValues[idx] }));
-      scoreDeptZip.sort((a, b) => b.val - a.val);
-      var sortedLabels = scoreDeptZip.map(z => z.label);
-      var sortedValues = scoreDeptZip.map(z => z.val);
-
-      var ctxScoreDept = document.getElementById('chartScoreDept').getContext('2d');
-      scoreChartInstance = new Chart(ctxScoreDept, {
-        type: 'bar',
-        data: {
-          labels: sortedLabels,
-          datasets: [{
-            label: 'คะแนนเฉลี่ย',
-            data: sortedValues,
-            backgroundColor: 'rgba(13, 58, 108, 0.85)',
-            borderColor: 'var(--color-primary)',
-            borderWidth: 1,
-            borderRadius: 6
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { display: false }
-          },
-          scales: {
-            y: {
-              min: 3.5,
-              max: 5.0,
-              ticks: { font: { family: 'Outfit' } },
-              grid: { color: 'rgba(0, 0, 0, 0.05)' }
-            },
-            x: {
-              ticks: { 
-                font: { family: 'Sarabun', size: 11 },
-                maxRotation: 45,
-                minRotation: 45
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1, font: { family: 'Outfit' } },
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
               },
-              grid: { display: false }
+              x: {
+                ticks: { font: { family: 'Sarabun', size: 12 } },
+                grid: { display: false }
+              }
             }
           }
-        }
-      });
+        });
+
+        // Chart 3: Bar Chart (Average Score by Department)
+        var deptScores = {};
+        allData.forEach(d => {
+          if (d.dept && d.score) {
+            if (!deptScores[d.dept]) deptScores[d.dept] = [];
+            deptScores[d.dept].push(d.score);
+          }
+        });
+        var scoreDeptLabels = Object.keys(deptScores);
+        var scoreDeptValues = scoreDeptLabels.map(dept => {
+          var scores = deptScores[dept];
+          var avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+          return parseFloat(avg.toFixed(2));
+        });
+
+        var scoreDeptZip = scoreDeptLabels.map((lbl, idx) => ({ label: lbl, val: scoreDeptValues[idx] }));
+        scoreDeptZip.sort((a, b) => b.val - a.val);
+        var sortedLabels = scoreDeptZip.map(z => z.label);
+        var sortedValues = scoreDeptZip.map(z => z.val);
+
+        var ctxScoreDept = document.getElementById('chartScoreDept').getContext('2d');
+        scoreChartInstance = new Chart(ctxScoreDept, {
+          type: 'bar',
+          data: {
+            labels: sortedLabels,
+            datasets: [{
+              label: 'คะแนนเฉลี่ย',
+              data: sortedValues,
+              backgroundColor: 'rgba(13, 58, 108, 0.85)',
+              borderColor: 'var(--color-primary)',
+              borderWidth: 1,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                min: 3.5,
+                max: 5.0,
+                ticks: { font: { family: 'Outfit' } },
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+              },
+              x: {
+                ticks: { 
+                  font: { family: 'Sarabun', size: 11 },
+                  maxRotation: 45,
+                  minRotation: 45
+                },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      } else {
+        // --- SECONDARY CHARTS ---
+        // Chart 1: Doughnut (Evaluator Roles distribution)
+        var roleCounts = {};
+        allData.forEach(d => {
+          if (d.evalPos) roleCounts[d.evalPos] = (roleCounts[d.evalPos] || 0) + 1;
+        });
+        var roleLabels = Object.keys(roleCounts);
+        var roleValues = Object.values(roleCounts);
+
+        var ctxDept = document.getElementById('chartDept').getContext('2d');
+        deptChartInstance = new Chart(ctxDept, {
+          type: 'doughnut',
+          data: {
+            labels: roleLabels,
+            datasets: [{
+              data: roleValues,
+              backgroundColor: [
+                '#0D3A6C', '#1E40AF', '#2A6F97', '#457B9D', '#A9D6E5',
+                '#2ECC71', '#F1C40F', '#E67E22', '#9B59B6', '#34495E'
+              ],
+              borderWidth: 2,
+              borderColor: '#ffffff'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'right',
+                labels: {
+                  font: { family: 'Sarabun', size: 11 },
+                  boxWidth: 12
+                }
+              }
+            }
+          }
+        });
+
+        // Chart 2: Bar Chart (Feedback Count by Presenter - Top 10)
+        var presenterCounts = {};
+        allData.forEach(d => {
+          if (d.teacher) presenterCounts[d.teacher] = (presenterCounts[d.teacher] || 0) + 1;
+        });
+        var presenterLabels = Object.keys(presenterCounts);
+        var presenterValues = Object.values(presenterCounts);
+        
+        var presenterZip = presenterLabels.map((lbl, idx) => ({ label: lbl, val: presenterValues[idx] }));
+        presenterZip.sort((a, b) => b.val - a.val);
+        var top10Zip = presenterZip.slice(0, 10);
+        var top10Labels = top10Zip.map(z => z.label);
+        var top10Values = top10Zip.map(z => z.val);
+
+        var ctxLevel = document.getElementById('chartLevel').getContext('2d');
+        levelChartInstance = new Chart(ctxLevel, {
+          type: 'bar',
+          data: {
+            labels: top10Labels,
+            datasets: [{
+              label: 'จำนวนความคิดเห็น (รายการ)',
+              data: top10Values,
+              backgroundColor: 'rgba(42, 111, 151, 0.85)',
+              borderColor: 'var(--color-secondary)',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { stepSize: 2, font: { family: 'Outfit' } },
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+              },
+              x: {
+                ticks: { font: { family: 'Sarabun', size: 11 } },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+
+        // Chart 3: Bar Chart (Individual Average Score - Top 15)
+        var presenterScores = projectsList.map(p => ({ label: p.teacher, val: p.avgScore }));
+        presenterScores.sort((a, b) => b.val - a.val);
+        var top15Scores = presenterScores.slice(0, 15);
+        var top15Labels = top15Scores.map(z => z.label);
+        var top15Values = top15Scores.map(z => z.val);
+
+        var ctxScoreDept = document.getElementById('chartScoreDept').getContext('2d');
+        scoreChartInstance = new Chart(ctxScoreDept, {
+          type: 'bar',
+          data: {
+            labels: top15Labels,
+            datasets: [{
+              label: 'คะแนนเฉลี่ยสะสม',
+              data: top15Values,
+              backgroundColor: 'rgba(13, 58, 108, 0.85)',
+              borderColor: 'var(--color-primary)',
+              borderWidth: 1,
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: {
+                min: 3.0,
+                max: 5.0,
+                ticks: { stepSize: 0.5, font: { family: 'Outfit' } },
+                grid: { color: 'rgba(0, 0, 0, 0.05)' }
+              },
+              x: {
+                ticks: { 
+                  font: { family: 'Sarabun', size: 10 },
+                  maxRotation: 45,
+                  minRotation: 45
+                },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
     }
 
     // Render Table Rows based on filters
@@ -2479,8 +2775,9 @@
         item.strengths.forEach(function(s) {
           var itemDiv = document.createElement("div");
           itemDiv.className = "feedback-item";
+          var evaluatorInfo = s.evalName ? `${s.evalName} (${s.evalPos || 'ไม่ระบุตำแหน่ง'})` : 'ความคิดเห็นจากเพื่อนครู';
           itemDiv.innerHTML = `
-            <div class="feedback-meta"><span><i class="fa-solid fa-user-pen"></i> ความคิดเห็นจากเพื่อนครู</span> <span>${s.timestamp}</span></div>
+            <div class="feedback-meta"><span><i class="fa-solid fa-user-pen"></i> ${evaluatorInfo}</span> <span>${s.timestamp}</span></div>
             <div style="font-weight: 500;">${s.text}</div>
           `;
           strengthsDiv.appendChild(itemDiv);
@@ -2495,8 +2792,9 @@
         item.future.forEach(function(f) {
           var itemDiv = document.createElement("div");
           itemDiv.className = "feedback-item";
+          var evaluatorInfo = f.evalName ? `${f.evalName} (${f.evalPos || 'ไม่ระบุตำแหน่ง'})` : 'ข้อเสนอแนะต่อยอด (Feedforward)';
           itemDiv.innerHTML = `
-            <div class="feedback-meta"><span><i class="fa-solid fa-lightbulb"></i> ข้อเสนอแนะต่อยอด (Feedforward)</span> <span>${f.timestamp}</span></div>
+            <div class="feedback-meta"><span><i class="fa-solid fa-lightbulb"></i> ${evaluatorInfo}</span> <span>${f.timestamp}</span></div>
             <div style="font-weight: 500;">${f.text}</div>
           `;
           futureDiv.appendChild(itemDiv);
@@ -2516,6 +2814,13 @@
       document.getElementById("errorAlert").style.display = "flex";
       document.getElementById("loader").style.display = "none";
     }
+
+
+
+function getSecondaryDemoData() {
+  var data = [{"ประทับเวลา":"","ชื่อ-สกุลผู้วิพากษ์":"","ตำแหน่งผู้วิพากษ์":"","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":""},{"ประทับเวลา":"","ชื่อ-สกุลผู้วิพากษ์":"","ตำแหน่งผู้วิพากษ์":"","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":""},{"ประทับเวลา":"20/6/2026, 18:40:11","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริรัตน์  มูลประเสริฐ","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"01 | นายอนิวัฒน์ ใจคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การวัดผลตามสภาพจริง ในการสอนเชิงปฏิบัติการ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรมีการวัดผลแบบสังเกตผู้เรียนและปฏิบัติจริง"},{"ประทับเวลา":"20/6/2026, 18:42:23","ชื่อ-สกุลผู้วิพากษ์":"สิดาการ ปัญโญคา","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"01 | นายอนิวัฒน์ ใจคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีเทคนิคที่ใช้เป็นเทคนิคที่เห็นได้อย่างชัดเจน และสามารถเห็นได้ชัดว่านักเรียนพัฒนาได้ดีขึ้น","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อยากให้นำเทคนิคนี้ไปต่อยอด"},{"ประทับเวลา":"20/6/2026, 18:43:01","ชื่อ-สกุลผู้วิพากษ์":"นางกรณ์กัญมณี  ทองยู","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"01 | นายอนิวัฒน์ ใจคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใช้สื่อการเรียนการสอนที่นักเรียนสามารถลงมือปฏิบัติได้จริง  ได้สัมผัสประสบการณ์และลงมือปฎิบัติจริง  ทำให้เกิดการกเรียนรู้  และครูสามารถวัดผลได้เขิงประจักษ์  ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เรื่องเวลาในการจัดสรรเวลาเพื่อให้เหมาะสมกับการเรียนรู้  เพื่อให้นักเรียนได้เรียนรู้และฝึกทักษะให้มากยิ่งขึ้น"},{"ประทับเวลา":"20/6/2026, 18:43:52","ชื่อ-สกุลผู้วิพากษ์":"บุญส่ง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"01 | นายอนิวัฒน์ ใจคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เทคนิค Active Learning ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ให้มีการทำท่าที่ยากขึ้นไป"},{"ประทับเวลา":"20/6/2026, 18:53:46","ชื่อ-สกุลผู้วิพากษ์":"นางสาวเบญมาศ สุนทร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"02 | นางสาวศิริวรรณ เขียนคันทา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ให้เด็กลงมือทำ และแสดงความคิดเห็น หรือความเห็นต่างจากเพื่อนในห้องเรียน เพื่อดูสังเกตุความคิดของนักเรียน ชื่นชมในส่วนนี้","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อยากให้ใช้วิจัยเล่มนี้ไปต่อยอด เพื่อที่ดูการเปลี่ยนแปลง หรือพัฒนาของเด็ก"},{"ประทับเวลา":"20/6/2026, 18:54:09","ชื่อ-สกุลผู้วิพากษ์":"นางสาววิกานดา ฟักทอง","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"02 | นางสาวศิริวรรณ เขียนคันทา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ใช้เทคนิคการสอนที่ส่งเสริมให้นักเรียนเกิดความคิดสร้างสรรค์ เข้าใบบทเรียนได้อย่างลึกซึ้ง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรต่อยอดหลักการ/วิธีการ กับบทเรียนอื่น"},{"ประทับเวลา":"20/6/2026, 18:54:31","ชื่อ-สกุลผู้วิพากษ์":"นายสุพจน์ จารุชัยวงศ์สกุล","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"02 | นางสาวศิริวรรณ เขียนคันทา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ผู้สอนมีการนำเนื้อหาเรขาคณิตสามมิติที่ปรากฎในหนังสือ ให้เป็นเนื้อหาที่ผู้สอนสามารถให้ผู้เรียนสร้างสรรค์ผลงานรูปเรขาคณิตออกมาเป็นรูปธรรมผ่านการลงมาปฏิบัติสร้างสรรค์ผลงาน เพื่อให้ผู้เรียนเห็นเป็นภาพที่ชัดเจนขึ้น ดังนั้นเนื้อหาที่เป็นเนื้อหาทฤษฎี จึงกลายเป็นเนื้อที่สามารถสร้างสรรค์และสนุกได้ในเวลาเดียวกัน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ผู้สอนสามารถให้ผู้เรียนนำมาคำนวณพื้นที่ของเรขาคณิตสามิติได้ เป็นสื่อประกอบการสอนในเนื้อหาอื่น ๆ"},{"ประทับเวลา":"20/6/2026, 18:56:49","ชื่อ-สกุลผู้วิพากษ์":"นายศรีนนท์  กองัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"01 | นายอนิวัฒน์ ใจคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นร. ได้ลงมือทำ มีการอัดคลิปการสอน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การติดตามต่อยอมพัฒนาทักษะอื่นๆ"},{"ประทับเวลา":"20/6/2026, 18:57:58","ชื่อ-สกุลผู้วิพากษ์":"บุญส่ง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"02 | นางสาวศิริวรรณ เขียนคันทา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"สื่อนวัตกรรม","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"มีการนำไปใช้ในชีวิตประจำวันได้"},{"ประทับเวลา":"20/6/2026, 18:58:01","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"02 | นางสาวศิริวรรณ เขียนคันทา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"3","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใช้สื่อนวัตกรรม","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"บอกรูบริคหรือวิธีการปฏิบัติตัวให้นักเรียนทราบก่อนทำการวิจัย"},{"ประทับเวลา":"20/6/2026, 18:59:18","ชื่อ-สกุลผู้วิพากษ์":"นายศรีนนท์  กองชัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"02 | นางสาวศิริวรรณ เขียนคันทา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การให้นักเรียนได้ใช้ นำเสนอแนวคิดและการลงมือทำ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การเพิ่มเกณฑ์ รูบิก ในการให้คะแนน"},{"ประทับเวลา":"20/6/2026, 19:04:07","ชื่อ-สกุลผู้วิพากษ์":"นายศรีนนท์  กองชัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"03 | นางสาวปทุมมา คำพันธ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การบันทึกและเก็บคะแนนเป็นรายบุคคล การให้นร.ได้ลงมืทำ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การเก็บหลักฐาน โดยการใช้ภาพ และอัดคลิป และรูบิกที่ชัดเจน (ผลสะท้อนกลับให้นร.เห็น)"},{"ประทับเวลา":"20/6/2026, 19:06:07","ชื่อ-สกุลผู้วิพากษ์":"บุญส่ง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"03 | นางสาวปทุมมา คำพันธ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เทคนิค Active Learning ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"มีการอัดคลิป ทำท่าที่ยากขึ้น"},{"ประทับเวลา":"20/6/2026, 19:06:19","ชื่อ-สกุลผู้วิพากษ์":"ศิริวรรณ ต่างคำ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"03 | นางสาวปทุมมา คำพันธ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นวัตกรรมตาราง 9 ช่อง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ขยายขนาดช่องตารางเพื่อเอื้อต่อการเรียนรู้ของผู้เรียนที่มีรูปร่างใหญ่ และมีภาพเคลื่อนไหวเพื่อแสดงให้เห็นพัฒนาการอย่งชัดเจน"},{"ประทับเวลา":"20/6/2026, 19:06:40","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"03 | นางสาวปทุมมา คำพันธ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใช้นวัตกรรม ตาราง9ช่อง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"แจ้งรูบริคคะแนนให้นักเรียนทราบก่อน ทำทำตารางตารางให้ขนาดใหญ่ขึ้น และอัดคลิปให้นักเรียนดูหลังเรียน"},{"ประทับเวลา":"20/6/2026, 19:08:01","ชื่อ-สกุลผู้วิพากษ์":"นางศศิธร  คุณดอย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"03 | นางสาวปทุมมา คำพันธ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการออกแบบพัฒนาสื่อให้เกิดความสอดคล้องให้นักเรียนเกิดความสนใจปลพเข้าใจ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ให้นักเรียนเกิดความกระตือรือร้นโดยการให้ทำงานเป็นทีมและอัดคลิปแสดงให้ทุกคนดูและมีการแลกเปลี่ยนอภิปรายร่วมกันเพื่อให้นักเรียนเกิดความเข้าใจ"},{"ประทับเวลา":"20/6/2026, 19:20:19","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"04 | นางสาววรวรรณ ป่าทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการพัฒนานักเรียนทั้ง K และ A","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การนำเสนอผลการวิจัยควรเป็นรูปแบบกราฟหรือแผนภูมิ "},{"ประทับเวลา":"20/6/2026, 19:21:16","ชื่อ-สกุลผู้วิพากษ์":"ภราดร ปันชัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"04 | นางสาววรวรรณ ป่าทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ครูมีความใส่ใจที่จะพัฒนานักเรียน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ติดตามผลการพัฒนาผู้เรียนเป็นระยะ"},{"ประทับเวลา":"20/6/2026, 19:25:27","ชื่อ-สกุลผู้วิพากษ์":"จักรพันธ์","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"04 | นางสาววรวรรณ ป่าทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการเก็บข้อมูล วิเคราะห์ข้อมูล และมีความชัดเจนของผลการวิจัย","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ในการวิจัยปรับใช้กับนักเรียนอย่างต่อเนื่อง"},{"ประทับเวลา":"20/6/2026, 19:30:16","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกัลญา  แข่งขัน","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"05 | นายภราดร ปันชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เป็นกิจกรรมที่เปิดโอกาสให้นักเรียนได้ออกแบบกิจกรรมด้วยตนเอง ทำให้เกิดความสนุกสนาน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำกิจกรรมกิจกรรมไปปรับใช้กับนักเรียนชั้นอื่น ๆ "},{"ประทับเวลา":"20/6/2026, 19:31:03","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริวรรณ เขียนคันทา","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"05 | นายภราดร ปันชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การที่ให้นักเรียนได้เป็นผู้คิดเองในการเรียนรู้","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การให้นักเรียนได้คิดและวางแผนการทำงานเอง"},{"ประทับเวลา":"20/6/2026, 19:31:19","ชื่อ-สกุลผู้วิพากษ์":"นางกรณ์กัญมณี  ทองยู","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"05 | นายภราดร ปันชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการทำงานเป็นทีม  เน้นการวางแผน  ทดลองและฝึกนำเสนอ ก่อนใช้จริง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรตรวจสอบตารางเวลาในการทำกิจกรรมหรือประสานกับกลุ่มที่จะจัดกิจกรรมก่อน"},{"ประทับเวลา":"20/6/2026, 19:32:46","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิรัญญา ไชยอุ่น","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"05 | นายภราดร ปันชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เป็นกิจกรรมที่ส่งเสริมให้นักเรียนนำความรู้ที่มีอยู่ไปถ่ายทอดให้กับอื่น ๆ ได้","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เปลี่ยนกลุ่มเป้าหมายที่สามารถดำเนินกิจกรรมได้ "},{"ประทับเวลา":"20/6/2026, 19:41:14","ชื่อ-สกุลผู้วิพากษ์":"ปทุมมา  คำพันธ์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"06 | นางสาวกรวรรณ กันธะวงค์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"สามารถนำนวัตกรรมแบบ7Eไปปรับใช้กับรายวิชาอื่นๆได้ ในการเรียนการสอนที่ต้องสืบเสาะหาข้อมูลที่จะเรียนรู้","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ในการใช้แบบ 7E ใช้เวลาหลายคาบ อาจจะไม่เหมาะกับบางเนื้อหา"},{"ประทับเวลา":"20/6/2026, 19:44:01","ชื่อ-สกุลผู้วิพากษ์":"ธนัญกฤดิ วงค์จันทร์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"05 | นายภราดร ปันชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"สามารถนำไปประยุกต์ใช้ได้จริง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"20/6/2026, 19:50:35","ชื่อ-สกุลผู้วิพากษ์":"พัฒน์ดนัย บุญลา","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"08 | นางศศิธร คุณดอย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การออกแบบการประเมินที่ครบถ้วน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เก็บข้อมูลหลาย ๆ ช่วงเวลา แยกระดับชั้น ใช้ข้อมูลที่ได้มาสะท้อนแก่ครูผู้สอนและครูประจำชั้น และต่อยอดข้อมูลที่คะแนนน้อยเพื่อนำมาปรับปรุงด้านนั้นในอนาคต"},{"ประทับเวลา":"20/6/2026, 19:51:43","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริรัตน์  มูลประเสริฐ","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"08 | นางศศิธร คุณดอย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การทำแบบสอบถามเกี่ยวกับการปฏิบัติงานของครูโดยการเก็บข้อมูลจริง จากจำนวนผู้ปกครองร้อยละ 50 ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อยากให้สอบถามเกี่ยวกับ การพัฒนาครูและเจ้าหน้าที่ สิ่งที่ผู้ปกครองต้องการให้โรงเรียนพัฒนาและอยากให้โรงเรียนไปในทิศทางใด เพื่อตอบสนองความต้องการที่ตอบโจทย์ในยุคปัจจุบัน"},{"ประทับเวลา":"20/6/2026, 19:52:00","ชื่อ-สกุลผู้วิพากษ์":"นายอนิวัฒน์  ใจคำ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"08 | นางศศิธร คุณดอย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีผู้ประเมินจำนวนมาก และมีความหลากหลายในการแสดงความคิดเห็น","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรต่อยอดในปีการศึกษาต่อไปและ ถ้าเป็นไปได้ ใช้ผู้ประเมินทุกคนในการนำผลมาประเมิน"},{"ประทับเวลา":"20/6/2026, 20:12:47","ชื่อ-สกุลผู้วิพากษ์":"นายเพิ่มสกุล ยาธัญ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"09 | นางสาวศิรัญญา ไชยอุ่น","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นวัตกรรมใช้นอกห้องเรียนได้ เรียนรู้ได้ตลอดเวลา","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ปรับเปลี่ยนใช้ในเรื่องถัดไป/วิชาอื่น"},{"ประทับเวลา":"20/6/2026, 20:14:59","ชื่อ-สกุลผู้วิพากษ์":"นายพิทักษ์ ศรีคำมูล","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"09 | นางสาวศิรัญญา ไชยอุ่น","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ครูสามารถใช้เทคโนโลยีได้เป็นอย่างดี นักเรียนสามารถเข้าเรียนได้ตลอดเวลา","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ครูควรเช็คและติดตามนักเรียนที่ไม่เข้าเรียน"},{"ประทับเวลา":"20/6/2026, 20:19:43","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริพร  ทิพวรรณ์","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"09 | นางสาวศิรัญญา ไชยอุ่น","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นวัตกรรมห้องเรียนออนไลน์ (Google Site)   มีความน่าสนใจเหมาะสมกับยุคปัจจุบัน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำไปทำห้องเรียนออนไลน์ (Google Site)  ลงสู่ห้องเรียน"},{"ประทับเวลา":"20/6/2026, 20:19:52","ชื่อ-สกุลผู้วิพากษ์":"นางสาวบัณฑิตา สงวนรัตน์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"09 | นางสาวศิรัญญา ไชยอุ่น","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการกระตุ้นผู้เรียนโดยการเรียนแบบออนไลน์ และใช้เกมเป็นฐาน ศึกษาได้ตลอดเวลา","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การติดตามการใช้เทคโนโลยีของนักเรียนในชั้นเรียน "},{"ประทับเวลา":"20/6/2026, 20:28:23","ชื่อ-สกุลผู้วิพากษ์":"เทพวรการ  อินอร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"10 | นายบุญส่ง เรือนแก้ว","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีใช้สถานการณ์ปัจจุบันมาให้นักเรียนได้ศึกษาร่วมกับประวัติศาสตร์","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อยากให้นักเรียนมีโอกาสได้ไปสถานที่ประวัติศาสตร์จริงๆ"},{"ประทับเวลา":"20/6/2026, 20:28:27","ชื่อ-สกุลผู้วิพากษ์":"นางกรณ์กัญมณี   ทองยู","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"10 | นายบุญส่ง เรือนแก้ว","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"3","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการเชื่อมโยงกับเหตุการณ์ปัจจุบัน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ให้นักเรียนได้ศึกษาเรียนรู้ในเชิงปฏิบัติด้วยตนเองมากยิ่งขึ้น"},{"ประทับเวลา":"20/6/2026, 20:37:12","ชื่อ-สกุลผู้วิพากษ์":"ศิริวรรณ ต่างคำ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"11 | นายศรีนนท์ กองชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นักเรียนทุกคนมีส่วนร่วมในการออกแบบนวัตกรรม","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรผสมผสานไอเดียของนักเรียนเข้ากับการพัฒนาทักษะการเรียนรู้\nเพิ่มประเด็นท้าทายสำหรับคนที่มีทักษะมาก่อน เนื่องจากโต๊ะ diy มีพื้นื่ค่อนข้างจำกัด"},{"ประทับเวลา":"20/6/2026, 20:38:35","ชื่อ-สกุลผู้วิพากษ์":"เพิ่มสกุล ยาธัญ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"11 | นายศรีนนท์ กองชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ปรับปรุงการแก้ปัญหาได้ถูกต้อง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อาจจะลองหาอุปกรณ์อื่นเพิ่มเติม"},{"ประทับเวลา":"20/6/2026, 20:38:36","ชื่อ-สกุลผู้วิพากษ์":"นางสาวปทุมมา  คำพันธ์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"11 | นายศรีนนท์ กองชัย","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เป็นการใช้สื่อวัสดุทดแทน หรือพัฒนาความคิดเชิงสร้างสรรค์ของนักเรียนได้ ฝึกให้นักเรียนรู้จักการแก้ไขปัญหา และกระบวนการคิด การเปรียบเทียบได้","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรให้นักเรียนเรียนรู้เกี่ยวกับประเภทของโต๊ะ พื้นผิว และการออกแบบก่อนที่จะให้นักเรียนได้คิดDIY "},{"ประทับเวลา":"20/6/2026, 20:47:13","ชื่อ-สกุลผู้วิพากษ์":"นายศรีนนท์  กองชัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"10 | นายบุญส่ง เรือนแก้ว","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การเชื่อมโยง กระบวนการจากอดีตสู่ปัจจุบัน ให้นักเรียนได้เข้าใจแต่ละเหตุการณ์","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การสรุปภาพรวม "},{"ประทับเวลา":"20/6/2026, 20:49:45","ชื่อ-สกุลผู้วิพากษ์":"นางสาวปทุมมา  คำพันธ์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"12 | นางสาวศุภาภรณ์ ธิติเศรษฐโสภณ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เทคนิคในการสอน เป็นการเปิดโอกาสให้นักเรียนใช้ความคิดได้อย่างอิสระ โดยที่ครูไม่ไปเบี่ยงเบนความคิดของนักเรียนในขณะที่นักเรียนกำลังคิดซึ่งเป็นสิ่งที่ดี","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"20/6/2026, 20:52:24","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริวรรณ เขียนคันทา","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"12 | นางสาวศุภาภรณ์ ธิติเศรษฐโสภณ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การที่ให้นักเรียนได้ช่วยกันหาข้อคาดเคลื่อนของข้อมูลกลุ่มอื่น","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การใช้การเรียนรู้แบบเปิด"},{"ประทับเวลา":"20/6/2026, 20:53:38","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกัลญา แข่งขัน","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"12 | นางสาวศุภาภรณ์ ธิติเศรษฐโสภณ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการวัดและประเมินผลนักเรียนที่น่าสนใจ โดยให้ครูในกลุ่มสาระร่วมกันประเมิน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรขยายเวลาในการจัดกิจกรรมให้มากขึ้น เพื่อให้กิจกรรมมีประสิทธิภาพมากขึ้น"},{"ประทับเวลา":"20/6/2026, 20:54:46","ชื่อ-สกุลผู้วิพากษ์":"เทพวรการ  อินอร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"12 | นางสาวศุภาภรณ์ ธิติเศรษฐโสภณ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เปิดโอกาสให้นักเรียนได้แสดงแนวคิดแล้วความเข้าใจของตัวเองและคิดหาแนวทางแก้ปัญหา","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ให้เด็กนักเรียนเรียนได้แสดงมุมมองที่แตกต่างของกลุ่มตัวเองแล้วของเพื่อน"},{"ประทับเวลา":"20/6/2026, 21:05:21","ชื่อ-สกุลผู้วิพากษ์":"เทพวรการ  อินอร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"13 | นางสาวศิริวรรณ ต่างคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ใช่หัวข้อการเรียนการสอนที่อยู่รอบๆตัวและใกล้ตัว","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"วิธีการวัดและประเมินเกณฑ์ที่หลากหลาย"},{"ประทับเวลา":"20/6/2026, 21:06:44","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"13 | นางสาวศิริวรรณ ต่างคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ครูมีความใส่ใจนักเรียนที่ติด 0 ร ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำไปใช้ในรายวิชาอื่นหรือนักเรียนชั้นม.ปลาย"},{"ประทับเวลา":"20/6/2026, 21:06:48","ชื่อ-สกุลผู้วิพากษ์":"เกศรา ตาดทอง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"13 | นางสาวศิริวรรณ ต่างคำ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การที่ผู้เรียนมีโอกาสเรียนรู้ด้วยตัวเอง โดยใช้กระบวนการกลุ่มมีเพื่อนคอยช่วยเหลือและกระตุ้นการเรียนผ่านการดูแลจากครู","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำไปปรับใช้ในรายวิชาอื่นที่สามารถพัฒนาแบบกลุ่มได้"},{"ประทับเวลา":"20/6/2026, 21:13:46","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"14 | นางสาวกัลญา แข่งขัน","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นำทักษะที่นักเรียนมีการพัฒนาที่น้อยจากปีที่ผ่านมานำใช้ในการแก้ปัญหาต่อยอด","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ในการแบ่งกลุ่มนักเรียน ครูควรคละความสามารถของนักเรียน และคอยช่วยเหลือนักเรียนแต่ละกลุ่ม"},{"ประทับเวลา":"20/6/2026, 21:15:52","ชื่อ-สกุลผู้วิพากษ์":"เทพวรการ  อินอร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"14 | นางสาวกัลญา แข่งขัน","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการปรับเปลี่ยนตามความเหมาะสม","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"หากเปิดโอกาสให้นักเรียนเป็นผู้เลือกเรื่องที่อยู่ในความสนใจของนักเรียนเอง"},{"ประทับเวลา":"20/6/2026, 21:19:29","ชื่อ-สกุลผู้วิพากษ์":"นางสาวเบญจมาศ สุนทร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"14 | นางสาวกัลญา แข่งขัน","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ออกแบบการสอนที่ระดมความคิดและกระบวนการกลุ่ม ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ให้นีกเรียนสื่อเอง เช่น ตอนที่ชอบและสนใจ"},{"ประทับเวลา":"20/6/2026, 21:23:00","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริพร  ทิพวรรณ์","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"15 | นางสาวสิดาการ ปัญโญคา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"แนวคิดในการใช้สื่อนวัตกรรมมีความน่าสนใจ พอใช้","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรใช้สื่อนวัตกรรมมีความน่าสนใจให้มากขึ้น โดยให้ผู้เรียนเป็นศูนย์กลาง แยกหมวดหมู่เฉพาะมากขึ้น"},{"ประทับเวลา":"20/6/2026, 21:24:15","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิรัญญา ไชยอุ่น","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"15 | นางสาวสิดาการ ปัญโญคา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใช้แบบฝึกทักษะในการเพื่อทักษะในการอ่าน-จำภาษาจีน ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำแนวทางปฏิบัติในไปใช้ในระดับชั้นอื่น ๆ เพื่อเพื่อผลสัมฤ?ธิ์ทางการเรียน"},{"ประทับเวลา":"20/6/2026, 21:25:12","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศุภาภรณ์ ธิติเศรษฐโสภณ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"14 | นางสาวกัลญา แข่งขัน","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เทคนิคการสอนโดยใช้การสอนแบบร่วมมือด้วยเทคนิค STAD เรื่องวรรณคดีและวรรณกรรม เนื่องจากเป็นเนื้อเรื่องที่อาจจะเข้าถึงได้ยากสำหรับผู้เรียนในยุคสมัยนี้ เมื่อมีการจัดการเรียนรู้แบบกลุ่มหรือร่วมมือ  จะทำให้ผู้เรียนเกิดการวิเคราะห์และวิพากษ์วิจารณ์ร่วมกัน ซึ่งเป็นการเพิ่มพื้นที่ให้ผู้เรียนได้แลกเปลี่ยนความคิดเห็นอย่างอิสระ ส่งผลให้ผู้เรียนเข้าใจเรื่องวรรณคดีและวรรณกรรม ได้ดียิ่งขึ้น","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อาจจะปรัยรูปแบบการนำเสนอเนื้อเรื่องวรรณคดีและวรรณกรรม  จากใบกิจกรรม  เป็นจิ๊กซอว์  เพื่อให้ผู้เรียนได้มีส่วนร่วม เล่นเกม สนุกสนาน และท้าทาย  โดยครูอาจจะแจ้งชื่อเรื่องที่จะเรียนไว้ก่อนหน้า แล้วให้ผู้เรียนศึกษาเรื่องราวต่างๆมาก่อร  หทำลังจากนั้นในการทำกิจกรรมนักเรียนจะต่อจิ๊กซอว์แต่ละเหตุการณ์  ซึ่งทำให้จับประเด็นสำคัญได้ดีขึ้นและการสอนแบบร่วมมือก็ทำให้ผู้เรียนได้วิพากษ์วิจารณ์วรรณคดีและวรรณกรรมได้แย่างสนุกสนาน และน่าสนใจ"},{"ประทับเวลา":"20/6/2026, 21:25:38","ชื่อ-สกุลผู้วิพากษ์":"นางสาวปทุมมา  คำพันธ์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"15 | นางสาวสิดาการ ปัญโญคา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ฝึกให้นักเรียนได้ใช้กระบวนการคิด การใช้คำศัพท์ต่างๆ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อาจจะให้เด็กๆได้ใช้ความรู้เกี่ยวกับคำศัพท์ที่ได้ไปต่อยอดในการนำไปใช้ในชีวิตประจำวัน"},{"ประทับเวลา":"20/6/2026, 21:33:36","ชื่อ-สกุลผู้วิพากษ์":"นายสุพจน์ จารุชัยวงศ์สกุล","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"16 | นายพัฒน์ดนัย บุญลา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการนำสิ่งท่ีเกิดขึ้นในชีวิตประจำวัน มากระตุ้นความสนใจให้แก่ผู็เรียน โดยผูกกับการเกิดปฏิกิริยาทางเคมี เพื่อให้ผู้เรียนเข้าใจถึงการเปลี่ยนแปลงและการเกิดปฏิกิริยาระหว่างเคมีต่าง ๆ และให้ผู้เรียนลงมือปฏิบัติผ่านการทดลอง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"20/6/2026, 21:35:53","ชื่อ-สกุลผู้วิพากษ์":"ครูศศิธร  คุณดอย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"16 | นายพัฒน์ดนัย บุญลา","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เทคนิค Ative Learning  กิจกรรมหลัก 4 กิจกรรมเมื่อนำมาใช้กับนักเรียน  เป็นสิ่งที่ดึงดูดให้นักเรียนสนใจและเกิดการเรียนรู้ได้ดี","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การแบ่งเวลาให้เหมาะสมต่อการจัดการเรียนรู้ หรืออาจแยกกลุ่มย่อยศึกษาแต่ละหัวข้อ และแลกเปลี่ยนความรู้ร่วมกัน"},{"ประทับเวลา":"20/6/2026, 21:37:56","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริวรรณ เขียนคันทา","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"17 | นางสาวเบญจมาศ สุนทร","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การนำเกมมาใช้ในการเรียนรู้","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การประยุกต์ใช้กับคำศัพท์ที่หลากหลายขึ้น"},{"ประทับเวลา":"20/6/2026, 21:39:01","ชื่อ-สกุลผู้วิพากษ์":"จักรพันธ์ ","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"17 | นางสาวเบญจมาศ สุนทร","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"3","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"คิดวิธีการในการพัฒนาการจำได้ดี","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อาจจะใช้ในรูปประโยคเพิ่มขี้น"},{"ประทับเวลา":"20/6/2026, 21:39:11","ชื่อ-สกุลผู้วิพากษ์":"นางสาววิกานดา ฟักทอง","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"17 | นางสาวเบญจมาศ สุนทร","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใช้โปรแกรมช่วยสร้างเกม ที่น่าสนใจ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ให้นักเรียนเป็นผู้สร้างบิงโก แล้วมาเล่นด้วยกัน"},{"ประทับเวลา":"20/6/2026, 21:43:40","ชื่อ-สกุลผู้วิพากษ์":"นางสาววรวรรณ ป่าทอง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"19 | นางสาวเกศรา ตาดทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การเปิดโอกาสให้ผู้เรียนเก็บข้อมูลการปฏิบัติงานของตนเอง วิเคราะห์ผลงานของตนเอง สะท้อนคิด และปรับปรุงผลงานด้วยตนเอง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เปิดวงสนทนาในการปรับปรุงผลงานระหว่างเพื่อนกับเพื่อน (เพื่อนประเมินเพื่อน) "},{"ประทับเวลา":"20/6/2026, 21:45:04","ชื่อ-สกุลผู้วิพากษ์":"นางสาวเบญจมาศ สุนทร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"19 | นางสาวเกศรา ตาดทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ให้เด็กรู้เองว่าตัวเองมีการผิดพลาดตรงไหน ด้วยตัวเอง และให้ตัวเองคิดทบทวน แก้ปัญหาเอง ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อยากให้ต่อยอด และเปิดกว้าง โดยการรับฟังความคิดเห็นของตัวเอง เพื่อนประเมิน และสุดท้ายคือครู"},{"ประทับเวลา":"20/6/2026, 21:45:51","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"19 | นางสาวเกศรา ตาดทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีจุดประสงค์หลายข้อและสามารถแก้ไขปัญหาได้สอดคล้อง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อาจนำหัวข้อทักษะการแสดงที่นักเรียนได้คะแนนน้อย เช่น ความแม่นยำในการแสดง มาทำต่อในปีการศึกษานี้"},{"ประทับเวลา":"20/6/2026, 21:53:48","ชื่อ-สกุลผู้วิพากษ์":"นางสาวบัณฑิตา สงวนรัตน์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"20 | นายเทพวรการ อินอร","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"แบบฝึกที่นักเรียนสามารถนำไปใช้ได้จริงจากการเรียนรู้ ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เพิ่มการเล่นที่หลากหลาย มีเทคนิคในการเรียนรู้ต่อไป"},{"ประทับเวลา":"20/6/2026, 21:54:42","ชื่อ-สกุลผู้วิพากษ์":"นางสาวปทุมมา  คำพันธ์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"21 | นายพิทักษ์ ศรีคำมูล","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เปิดนักเรียนสามารถเป็นผู้เลือกวัสดุได้เองตามความถนัด","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นักเรียนต้องบอกข้อดีข้อเสียของแต่ละประเภทได้ตามที่ตนเองเลือก"},{"ประทับเวลา":"20/6/2026, 21:55:38","ชื่อ-สกุลผู้วิพากษ์":"สิดาการ ปัญโญคา","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"21 | นายพิทักษ์ ศรีคำมูล","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ความถนัด ความชอบของนักเรียน ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การสร้างเกณฑ์การให้คะแนน กราประเมินแบบเพื่อนช่วยเพื่อน"},{"ประทับเวลา":"20/6/2026, 22:55:48","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิรัญญา ไชยอุ่น","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"22 | นายเพิ่มสกุล ยาธัญ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใช้บอร์ดเกมอิเล็กทรอส์นิกในการจัดกิจกรรม เพิ่มความสนุนสนาน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อาจมีการ IOC จากผู้เชียวชาญ เพื่อการต่อยอดในอนาคต"},{"ประทับเวลา":"20/6/2026, 23:00:31","ชื่อ-สกุลผู้วิพากษ์":"สิดาการ ปัญโญคา","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"22 | นายเพิ่มสกุล ยาธัญ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การใช้เกม การใช้แอพ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำไปต่อยอดต่อ"},{"ประทับเวลา":"20/6/2026, 23:02:47","ชื่อ-สกุลผู้วิพากษ์":"นายภิชัยพัทธ์ คังเจริญธนกิจ","ตำแหน่งผู้วิพากษ์":"บุคลากรสนับสนุน","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"22 | นายเพิ่มสกุล ยาธัญ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"3","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการพัฒนาสร้างสื่อประกอบการเรียนการสอน ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำไปต่อยอดเรื่อง/หน่วยการเรียนรู้อื่นๆ "},{"ประทับเวลา":"20/6/2026, 23:09:24","ชื่อ-สกุลผู้วิพากษ์":"ศิริวรรณ ต่างคำ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"23 | นางสาวบัณฑิตา สงวนรัตน์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นำสิ่งที่นักเรียนสนใจมาสร้างนวัตกรรม","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"จัดทำสื่อที่หลากหลาย"},{"ประทับเวลา":"20/6/2026, 23:10:26","ชื่อ-สกุลผู้วิพากษ์":"เทพวรการ อินอร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"23 | นางสาวบัณฑิตา สงวนรัตน์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ใช่สิ่งที่นักเรียนชอบมาเป็นสื่อ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรมีเกมที่หลากหลายหรือให้นักเรียนเรียนเป็นผู้ออกแบบเกมเอง"},{"ประทับเวลา":"20/6/2026, 23:10:39","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"23 | นางสาวบัณฑิตา สงวนรัตน์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการนำเกมมาใช้ในการพัฒนาผลสัมฤทธิ์ทางการเรียน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ในการคิดคำถามในเกมมีความสำคัญ อาจะให้ผู้เชี่ยวชาญหาค่า IOC เพื่อร่วมกันวิเคราะห์ผลการเรียนรู้รายข้อ และเรียงลำดับความยากง่ายของคำถาม"},{"ประทับเวลา":"20/6/2026, 23:15:40","ชื่อ-สกุลผู้วิพากษ์":"สิดาการ ปัญโญคา","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"24 | นายธนัญกฤดิ วงค์จันทร์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การตอบปัญหาที่เจอ แสดงความคิดเห็นในหัวข้อต่างๆ การใช้กระบวนการกลุ่ม","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำไปต่อยอด เปลี่ยนแบบประเมินให้เหมาะสม"},{"ประทับเวลา":"20/6/2026, 23:16:42","ชื่อ-สกุลผู้วิพากษ์":"จักรพันธ์ ภูดอนตอง","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"24 | นายธนัญกฤดิ วงค์จันทร์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ใช้กระบวนการสังเกต ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรใช้เเบบประเมินตนเองเข้าร่วมด้วย"},{"ประทับเวลา":"20/6/2026, 23:17:57","ชื่อ-สกุลผู้วิพากษ์":"ภราดร ปันชัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"24 | นายธนัญกฤดิ วงค์จันทร์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"3","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ควรสังเกตุผู้เรียนเป็นรายบุคคลมากขึ้น บันทึกพฤติกรรมที่ต้องการปรับปรุง เป็นรายบุคคล","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"จัดกลุ่มผู้เรียนตามปัญหาที่พบ ใช้กระบวนการหลายๆอย่าง ในการแก้ไขปัญหา เช่น เพื่อนช่วยเพื่อน เป็นต้น\n"},{"ประทับเวลา":"20/6/2026, 23:23:56","ชื่อ-สกุลผู้วิพากษ์":"ครูศศิธร  คุณดอย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"25 | นางสาวจริณทร์พร พรสุภาวรรณ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การให้นักเรียนได้ลงมือปฏิบัติการไปสัมภาษณ์ครอบครัวบุญคุณ (บุคคลภายนอก)โรงเรียน ทำให้นักเรียนเกิดความสนใจ ประโยชน์ที่เกิดขึ้นคือดึงดูดให้นักเรียนเข้าร่วมกิจกรรมของโรงเรียน และส่งเสริมให้นักเรียนเป็นผู้มีจิตอาสามากขึ้น","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เมื่อจัดกิจกรรมเสร็จแล้วควรให้นักเรียนได้มีการแบ่งปันออนไลน์/แบ่งปันในหอประชุมให้กับนักเรียน/ผู้อื่นให้มีความสนใจเข้าร่วมจิตอาสามากขึ้น และเกิดความภาคภูมิใจในตนเองที่ได้ทำความดีเป็นผู้มีจิตอาสา"},{"ประทับเวลา":"20/6/2026, 23:25:25","ชื่อ-สกุลผู้วิพากษ์":"นายสุพจน์ จารุชัยวงศ์สกุล","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"25 | นางสาวจริณทร์พร พรสุภาวรรณ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นำผลการดำเนินกิจกรรมเพื่อมาสังเคราะห์เป็นข้อมูลที่สะท้อนถึงคุณธรรมจริยธรรมของนักเรียน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"20/6/2026, 23:26:40","ชื่อ-สกุลผู้วิพากษ์":"พัฒน์ดนัย บุญลา","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"25 | นางสาวจริณทร์พร พรสุภาวรรณ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การจัดกิจกรรมจิตอาสา","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"พัฒนากิจกรรมจิตอาสา ให้นักเรียนอยากไปต่ออีกครั้ง หลังจากไปมาแล้ว "},{"ประทับเวลา":"20/6/2026, 23:28:43","ชื่อ-สกุลผู้วิพากษ์":"นายภิชัยพัทธ์ คังเจริญธนกิจ","ตำแหน่งผู้วิพากษ์":"บุคลากรสนับสนุน","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"25 | นางสาวจริณทร์พร พรสุภาวรรณ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นวัตกรรมการบริการจัดการ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"พัฒนาจากนามธรรม สู่รูปธรรมที่ชัดเจนในบริทของโรงเรียน"},{"ประทับเวลา":"20/6/2026, 23:31:24","ชื่อ-สกุลผู้วิพากษ์":"นายพิทักษ์ ศรีคำมูล","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"26 | นายจักรพันธ์ ภูดอนตอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"สามารถปรับปรุงพฤติกรรมนักเรียนได้เกิน 70 %","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เป็นเรื่องละเอียดอ่อน ควรระมัดระวังในการสังเกตุ หรือเก็บข้อมูล"},{"ประทับเวลา":"20/6/2026, 23:32:50","ชื่อ-สกุลผู้วิพากษ์":"สิดาการ ปัญโญคา","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"26 | นายจักรพันธ์ ภูดอนตอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"พฤติกรรมในการแต่งกาย การสังเกตการแต่งกาย ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"กระตุ้นเรื่องการแต่งกาย ติดตามอย่างต่อเนื่อง อาจจะเพิ่มจุดการตรวจเครื่องแต่งกาย "},{"ประทับเวลา":"20/6/2026, 23:37:49","ชื่อ-สกุลผู้วิพากษ์":"นางสาวบัณฑิตา สงวนรัตน์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"26 | นายจักรพันธ์ ภูดอนตอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการติดตามผลการแต่งกายของนักเรียน และวิเคราะห์ผลข้อมูลของพฤติกรรมของผู้เรียน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"หาแนวทางการแก้ปัญหารวมกับครูประจำชั้น และนักเรียน ไปในทางเดียวกัน ไม่ให้เกิดปัญหาต่อเนื่อง"},{"ประทับเวลา":"20/6/2026, 23:42:40","ชื่อ-สกุลผู้วิพากษ์":"นางสาวจริณทร์พร  พรสุภาวรรณ์","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"27 | นางสาววิกานดา ฟักทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เป็นวิจัยที่สามารถนำข้อมูลไปใช้ในการพัฒนาด้านการเรียนของนักเรียนได้อย่างเป็นรูปธรรม","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"20/6/2026, 23:43:17","ชื่อ-สกุลผู้วิพากษ์":"นางสาวเบญจมาศ สุนทร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"27 | นางสาววิกานดา ฟักทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ทำให้เห็นได้ชัดว่าเด็กขาดในส่วนไหน และควรจะเพิ่มเต้มในส่วนไหน เพื่อตัวเด็กต่อไป","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เสริมวิชาที่จำเป็นต่ออนาคตนักเรียนที่นักเรียนเลือก อาจจะมีการติวช่วย  เช่น ในช่วงคาบว่างหรือชุมนุม"},{"ประทับเวลา":"20/6/2026, 23:44:16","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"27 | นางสาววิกานดา ฟักทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการศึกษาความสัมพันธ์ของนักเรียน วิชาคณิตศาสตร์ วิทยาศาสตร์ และONET ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อยากให้ทำในรายวิชาอื่นๆด้วย เช่น ภาษาไทย ภาษาอังกฤษ"},{"ประทับเวลา":"20/6/2026, 23:48:30","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศุภาภรณ์ ธิติเศรษฐโสภณ","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"27 | นางสาววิกานดา ฟักทอง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"จุดเด่นที่เครื่องมือที่ใช้ในการวิจัย\nทำให้สมารถรวบรวมและวิเคราะห์ข้อมูลได้อย่างครอบคลุมและเที่ยงตรง \nทำให้ได้ผลการวิจัยดังนี้\n1) ผลการศึกษาจากคะแนนผลสัมฤทธิ์วิชาคณิตศาสตร์ใน ระดับชั้นมัธยมศึกษาตอนต้นมีความสัมพันธ์อย่างมีนัยสำคัญ  จึงสามารถนำมาใช้พิจารณาในการเข้าเรียนแผนการเรียนวิทยาศาสตร์ คณิตศาสตร์ในระดับชั้นมัธยมศึกษาตอนปลาย\n2) ผลสรุปจากการวิจัย พบว่า ผลสัมฤทธิ์ทางการเรียนวิชาคณิตศาสตร์ ระดับชั้นมัธยมศึกษาตอนต้นส่งผลต่อผลสัมฤทธิ์ทางการเรียนของนักเรียนแผนการเรียนวิทยาศาสตร์ในระดับชั้นมัธยมศึกษาปีที่ 4 อย่างมีนัยสำคัญ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"เพิ่มเติมจากผลการวิจัย เนื่องจากวิชาคณิตศาสตร์เป็นจุดเริ่มต้นของวิทยาศาสตร์ หากนักเรียนที่ขาดพื้นฐานคณิตศาสตร์ที่ดีส่งผลให้นักเรียนมีความเข้าใจทางด้านเหตุและผล  และความสัมพันธ์ทางตรรกะต่าง ๆ และเรียนรู้เชิงนามธรรมได้ไม่ค่อยดี \n\nฉะนั้นควรกระตุ้นให้นักเรียนเห็นความสำคัญของคณิตศาสตร์อย่างยิ่ง  หากนักเรียนมีความต้องการที่จะเข้าศึกษาต่อแผนการเรียนวิทยาศาสตร์และคณิตศาสตร์ในชั้น มัธยมศึกษาตอนปลายหรือทำงานที่เกี่ยวข้องกับด้านวิทยาศาสตร์"},{"ประทับเวลา":"20/6/2026, 23:51:13","ชื่อ-สกุลผู้วิพากษ์":"นางสาวเบญจมาศ สุนทร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"29 | นางสาวสุกัญญา ไชยญาเป็ง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการช่วยเหลือเด็กผ่านการอบรมและให้คำแนะนำจากโรงพยาบาลที่มีการดูแลแบบจริงจังและใส่ใจ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ในปี 69 นี้ให้ผู้ทำวิจัยต่อยอดในวิจัยนี้และเพิ่มมกลุ่มเป้าหมายคือ บุคลากรใน รร ร่วมด้วย"},{"ประทับเวลา":"20/6/2026, 23:51:21","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกรวรรณ กันธะวงค์","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"29 | นางสาวสุกัญญา ไชยญาเป็ง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใส่ใจที่จะช่วยเหลือด้านสุขภาพของนักเรียน ซึ่งอาจนำมาสู่การเป็นโรคในภายหลัง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ศึกษาครูและบุคลากรทั้งโรงเรียน และจัดกิจกรรมส่งเสริมการออกกำลังกายในทุกเช้า"},{"ประทับเวลา":"20/6/2026, 23:51:59","ชื่อ-สกุลผู้วิพากษ์":"เกศรา ตาดทอง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"29 | นางสาวสุกัญญา ไชยญาเป็ง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"นักเรียนมีความรู้และทักษะทางโภชนาการมากขึ้น","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"มีการติดตามผลอย่างต่อเนื่อง เพื่อผลลัพธ์ที่นักเรียนสามารถพัฒนาในทางที่ดีขึ้น"},{"ประทับเวลา":"20/6/2026, 23:53:36","ชื่อ-สกุลผู้วิพากษ์":"นายศรีนนท์  กองชัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"29 | นางสาวสุกัญญา ไชยญาเป็ง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การเก็บข้อมูล เป็นรายบุคคล การหาสาเหตุ และวิธีการแก้ไข","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรเก็บข้อมูลพันธุกรรม พ่อ แม่ ครอบครัว และโรคประจำตัว มาประกอบการทำวิจัย"},{"ประทับเวลา":"20/6/2026, 23:54:58","ชื่อ-สกุลผู้วิพากษ์":"นางสาววรวรรณ ป่าทอง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"29 | นางสาวสุกัญญา ไชยญาเป็ง","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การเก็บข้อมูลอย่างรอบด้านทั้งตนเอง ความรู้และสังคม อีกทั้งยังศึกษาระยะยาวโดยมุ่งแก้ปัญหาให้ตรงจุดโดยเริ่มตั้งแต่หาสาเหตุที่ชัดเจนก่อนการวางแผนพัฒนา","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ส่งแบบสอบถามให้บุคคลรอบข้างกลุ่มตัวอย่างประเมินพฤติกรรมการใช้ชีวิต"},{"ประทับเวลา":"20/6/2026, 23:57:56","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริวรรณ เขียนคันทา","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"30 | นายสุพจน์ จารุชัยวงศ์สกุล","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การใช้กระบวนการ PDCA มาใช้ในการประเมินการทำงานของสภานักเรียน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การให้ครูผู้เกี่ยวข้องมีส่วนร่วมในการสังเกต จะได้มุมมองที่หลากหลาย"},{"ประทับเวลา":"20/6/2026, 23:59:19","ชื่อ-สกุลผู้วิพากษ์":"เทพวรการ อินอร","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"30 | นายสุพจน์ จารุชัยวงศ์สกุล","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เป็นโอกาสให้นักเรียนได้ประสบการณ์ในการทำงาน\nแบ่งหน้าที่ชัดเจน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรทำให้หลากหลายรูปแบบกิจกรรม"},{"ประทับเวลา":"20/6/2026, 23:59:38","ชื่อ-สกุลผู้วิพากษ์":"นางสาวปทุมมา  คำพันธ์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"30 | นายสุพจน์ จารุชัยวงศ์สกุล","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เป็นกระบวนการที่เปิดโอกาสให้นักเรียนได้เรียนรู้การทำงานผ่านประสบการณ์จริง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"21/6/2026, 0:00:13","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกัลญา แข่งขัน","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"30 | นายสุพจน์ จารุชัยวงศ์สกุล","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ใช้เทคนิคที่น่าสนใจและครอบคลุม ผู้วิจัยมีการศึกษาแนวคิดมาอย่างดี ทำให้ได้ผลการวิจัยที่ตรงจุด","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"นำเทคนิคไปใช้กับนักเรียนกลุ่มอื่น "},{"ประทับเวลา":"21/6/2026, 0:05:44","ชื่อ-สกุลผู้วิพากษ์":"นางสาวศิริวรรณ เขียนคันทา","ตำแหน่งผู้วิพากษ์":"หัวหน้ากลุ่มสาระการเรียนรู้","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"31 | นางกรณ์กัญมณี ทองยู","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"การที่ให้นักเรียนฝึกการจัดการตนเองผ่านการทำกิจกรรมยามว่าง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การให้นักเรียนได้ออกแบบกิจกรรมยามว่างของตนเองที่หลากหลายไม่ซ้ำเดิม "},{"ประทับเวลา":"21/6/2026, 0:05:45","ชื่อ-สกุลผู้วิพากษ์":"บุญส่ง","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"31 | นางกรณ์กัญมณี ทองยู","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการให้นักเรียนหอพักได้ผ่อนคลาย มีการจัดการตนเอง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"มีการต่อยอดเรื่องเวลา และความปลอดภัยเป็นหลัก"},{"ประทับเวลา":"21/6/2026, 0:05:50","ชื่อ-สกุลผู้วิพากษ์":"นางสาวกัลญา  แข่งขัน","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"31 | นางกรณ์กัญมณี ทองยู","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ผู้วิจัยได้ออกแบบกิจกรรมยามว่างที่มีประโยชน์และเวลาที่เหมาะสม ทำให้นักเรียนมีความรับผิดชอบต่อหน้าที่","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"21/6/2026, 0:06:04","ชื่อ-สกุลผู้วิพากษ์":"นางสาววิกานดา ฟักทอง","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"31 | นางกรณ์กัญมณี ทองยู","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"4","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"เป็นการส่งเสริมพฤติกรรม ผ่านการลงมือปฏิบัติ และเกิด AAL","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรพัฒนาต่อทั้งหอพักชายและหอพักหญิง ไปในทิศทางเดียวกัน"},{"ประทับเวลา":"21/6/2026, 0:16:37","ชื่อ-สกุลผู้วิพากษ์":"ภราดร ปันชัย","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"32 | นางสาวศิริรัตน์ มูลประเสริฐ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ใช้ได้จริง และเป็นปัจจุบัน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"อัพเดทข้อมูลเป็นปัจจุบัน\n"},{"ประทับเวลา":"21/6/2026, 0:19:51","ชื่อ-สกุลผู้วิพากษ์":"นางสาวบัณฑิตา สงวนรัตน์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"32 | นางสาวศิริรัตน์ มูลประเสริฐ","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"วางระบบการติดตามงานแก้ปัญหา 0,ร ได้จริง และจำนวนลด ให้นักเรียนได้มีการติดตามงานได้ตนเอง","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"การลงระบบอาจมีความคลาดเคลื่อน ข้อมูลของผู้เรียน"},{"ประทับเวลา":"21/6/2026, 0:21:47","ชื่อ-สกุลผู้วิพากษ์":"นายพิทักษ์ ศรีคำมูล","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"33 | นางสาวศิริพร ทิพวรรณ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ผู้วิจัยมีการเก็บข้อมูลที่ละเอียดมาก","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"ควรมีการบันทึกปัญหา อุปสรรค เพื่อการแก้ไขในการทำกิจกรรม โครงการในปีการศึกษา ต่อๆ ไป แต่ก็ปรับในทุก ๆ ปี อยู่แล้ว ทำงานง่ายขึ้นมาก"},{"ประทับเวลา":"21/6/2026, 0:30:29","ชื่อ-สกุลผู้วิพากษ์":"นายสุพจน์ จารุชัยวงศ์สกุล","ตำแหน่งผู้วิพากษ์":"หัวหน้างาน/หัวหน้าฝ่าย","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"33 | นางสาวศิริพร ทิพวรรณ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"มีการใช้เครื่องมือ PDCA ในการกำกับกระบวนการทำงานของโรงเรียน เพื่อติดตามความคืบหน้าและผลการปฏิบัติงาน","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"},{"ประทับเวลา":"21/6/2026, 0:47:28","ชื่อ-สกุลผู้วิพากษ์":"นางสาวบัณฑิตา สงวนรัตน์","ตำแหน่งผู้วิพากษ์":"ครูผู้สอนมัธยมศึกษา","ลำดับที่นำเสนอ / ชื่อ-สกุลผู้เสนอ":"33 | นางสาวศิริพร ทิพวรรณ์","ประเด็นที่ 1: คะแนนความตรงจุดและประสิทธิผลของผลลัพธ์ในการแก้ปัญหา":"5","ประเด็นที่ 2: จุดเด่นของงานวิจัย (สื่อนวัตกรรม / เทคนิค Active Learning / การวัดผล)":"ได้นำหลักของ PDCA การบริหารโครงการและแผนงานที่ครอบคลุม รายงานดำเนินการสม่ำเสมอ","ประเด็นที่ 3: ข้อเสนอแนะเพื่อการต่อยอด (Feedforward)":"-"}];
+  return JSON.stringify(data);
+}
   </script>
 </body>
 </html>
